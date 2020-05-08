@@ -1,0 +1,10 @@
+name: SuperMegaUltraHardcore
+main: com.ethanpilz.smuhc.SMUHC
+version: 1.0
+api-version: 1.14
+description: UHC Client
+author: Ethan Pilz
+commands:
+  supermegadeathrocket:
+    description: hi
+permissions:
