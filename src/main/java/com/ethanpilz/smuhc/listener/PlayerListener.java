@@ -1,12 +1,16 @@
 package com.ethanpilz.smuhc.listener;
 
 import com.ethanpilz.smuhc.SMUHC;
+import com.ethanpilz.smuhc.components.rocket.Rocket;
+import com.ethanpilz.smuhc.factory.SMUHCItemFactory;
 import org.bukkit.*;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -19,9 +23,14 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @SuppressWarnings("unused")
 
 public class PlayerListener implements Listener {
+
+    Map<String, Long> cooldowns = new HashMap<String, Long>();
 
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -44,11 +53,14 @@ public class PlayerListener implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event){
         //Golden Apple
         if (event.hasItem() && event.getItem().getType().equals(Material.GOLDEN_APPLE)) {
-            event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 2400, 1));
-            event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 2));
-            event.getPlayer().setFoodLevel(event.getPlayer().getFoodLevel() + 4);
-            event.getPlayer().getInventory().remove(Material.GOLDEN_APPLE);
-
+            if(event.getPlayer().getGameMode().equals(GameMode.CREATIVE)){
+                //Do nothing because this literally crashes the entire server lol
+            } else {
+                event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 2400, 1));
+                event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 2));
+                event.getPlayer().setFoodLevel(event.getPlayer().getFoodLevel() + 4);
+                event.getPlayer().getInventory().remove(Material.GOLDEN_APPLE);
+            }
             //Shields
         } if (event.hasItem() && event.getItem().getType().equals(Material.SHIELD)){
             event.setCancelled(true);
@@ -69,6 +81,39 @@ public class PlayerListener implements Listener {
             event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.WHITE + "You cannot use Totem of Undying in " + ChatColor.RED + "SuperMegaUltraHardcore!");
             event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_GLASS_BREAK, 1,1);
             event.getPlayer().getInventory().remove(Material.TOTEM_OF_UNDYING);
+        } if (event.hasItem() && event.getItem().getType().equals(Material.DIAMOND_HOE)){
+            event.setCancelled(true);
+
+            //Super Mega Death Rocket
+        } if (event.hasItem() && event.getItem().equals(SMUHCItemFactory.FishBones())) {
+            if (event.getAction().equals(Action.RIGHT_CLICK_AIR) || event.getAction().equals(Action.LEFT_CLICK_AIR)) {
+                if(cooldowns.containsKey(event.getPlayer().getName())){
+                    //Player is inside HashMap
+                    if(cooldowns.get(event.getPlayer().getName()) > System.currentTimeMillis()){
+                        //Player has time left to wait
+                        long timeLeft = (cooldowns.get(event.getPlayer().getName()) - System.currentTimeMillis()) / 1000;
+                        event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.RED + "You have to wait " + ChatColor.AQUA + timeLeft + ChatColor.RED + " seconds before using that again.");
+                        return;
+                    }
+                }
+
+                cooldowns.put(event.getPlayer().getName(), System.currentTimeMillis() + (60 * 1000));
+                Bukkit.getServer().broadcastMessage(SMUHC.smuhcPrefix + ChatColor.AQUA + event.getPlayer().getName() + ChatColor.DARK_GRAY + ":" + ChatColor.GREEN + " Bye bye!");
+                event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE, 1, 1);
+                event.getPlayer().sendTitle("", ChatColor.RED + "Super Mega Death Rocket firing...", 5, 20, 5);
+                Bukkit.getScheduler().scheduleSyncDelayedTask(SMUHC.plugin, new Runnable() {
+                    @Override
+                    public void run() {
+
+                        new Rocket(event.getPlayer(), event.getPlayer().getEyeLocation());
+                        event.getPlayer().getLocation().getWorld().spawnParticle(Particle.FIREWORKS_SPARK, event.getPlayer().getLocation(), 100, 0, 1, 0.5);
+                        Bukkit.getServer().broadcastMessage(SMUHC.smuhcPrefix + ChatColor.AQUA + event.getPlayer().getName() + ChatColor.RED + " has just fired the Super Mega Death Rocket!");
+                    }
+                }, 20L);
+
+            } else {
+                event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.RED + "This is an extremely powerful weapon, it cannot be detonated close to you! Aim far away!");
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 package com.ethanpilz.smuhc;
 
-import com.ethanpilz.smuhc.command.SuperMegaDeathRocket;
+import com.ethanpilz.smuhc.command.SuperMegaDeathRocketCommand;
+import com.ethanpilz.smuhc.components.SuperMegaDeathRocketComponent;
 import com.ethanpilz.smuhc.listener.PlayerListener;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -29,9 +30,10 @@ public class SMUHC extends JavaPlugin {
         plugin = this;
 
         //Commands
-        getCommand("supermegadeathrocket").setExecutor(new SuperMegaDeathRocket());
+        getCommand("supermegadeathrocket").setExecutor(new SuperMegaDeathRocketCommand());
 
-
+        //Recipe
+        Bukkit.addRecipe(SuperMegaDeathRocketComponent.Recipe());
 
     }
     public void onDisable(){
