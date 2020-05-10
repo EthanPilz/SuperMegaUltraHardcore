@@ -33,7 +33,7 @@ import java.util.Map;
 public class PlayerListener implements Listener {
 
     Map<String, Long> cooldowns = new HashMap<String, Long>();
-    //boolean broadcast = SMUHC.plugin.getConfig().getBoolean("broadcast");
+    boolean broadcast = SMUHC.plugin.getConfig().getBoolean("broadcast");
 
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -42,10 +42,10 @@ public class PlayerListener implements Listener {
             event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.AQUA + "SuperMegaUltraHardcore currently running.");
 
         } if (event.getPlayer().getUniqueId().toString().equalsIgnoreCase("1ed071ee-25e2-44cc-9bda-f5442b92143e") || event.getPlayer().getUniqueId().toString().equalsIgnoreCase("d2f0ac46-9b4d-4a2b-9661-872ba65f9ac9")) {
-            //if (broadcast == true) {
+            if (broadcast) {
                 Bukkit.getServer().broadcastMessage(SMUHC.smuhcPrefix + ChatColor.YELLOW + "Plugin developer " + ChatColor.AQUA + event.getPlayer().getName() + ChatColor.YELLOW + " has joined");
                 event.setJoinMessage(null);
-           // }
+            }
         }
     }
 

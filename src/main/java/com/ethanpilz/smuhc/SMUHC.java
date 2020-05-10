@@ -24,15 +24,15 @@ public class SMUHC extends JavaPlugin {
 
         long startTimeInMilliseconds = System.currentTimeMillis();
 
+        //Register Plugin for tasks
+        plugin = this;
+
         //Config
         getConfig().options().copyDefaults();
         saveDefaultConfig();
 
         //Listener
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
-
-        //Register Plugin for tasks
-        plugin = this;
 
         //Commands
         getCommand("supermegadeathrocket").setExecutor(new SuperMegaDeathRocketCommand());
