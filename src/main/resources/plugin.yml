@@ -1,10 +1,13 @@
 name: SuperMegaUltraHardcore
 main: com.ethanpilz.smuhc.SMUHC
-version: 1.0
-api-version: 1.14
+version: '1.0'
+api-version: '1.14'
 description: UHC Client
 author: Ethan Pilz
+config: resources.defaults.config
 commands:
+  smuhc:
+    description: Base command for Super Mega Ultra Hardcore
   supermegadeathrocket:
-    description: hi
+    description: Gives the Super Mega Death Rocket
 permissions:

@@ -1,4 +1,4 @@
-package com.ethanpilz.smuhc.components;
+package com.ethanpilz.smuhc.components.rocket;
 
 import com.ethanpilz.smuhc.SMUHC;
 import com.ethanpilz.smuhc.factory.SMUHCItemFactory;

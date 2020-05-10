@@ -4,8 +4,8 @@ import com.ethanpilz.smuhc.SMUHC;
 import com.ethanpilz.smuhc.components.rocket.Rocket;
 import com.ethanpilz.smuhc.factory.SMUHCItemFactory;
 import org.bukkit.*;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -16,10 +16,12 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -31,15 +33,32 @@ import java.util.Map;
 public class PlayerListener implements Listener {
 
     Map<String, Long> cooldowns = new HashMap<String, Long>();
+    //boolean broadcast = SMUHC.plugin.getConfig().getBoolean("broadcast");
 
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onPlayerJoin(PlayerJoinEvent event) {
+    public void onPlayerJoin(PlayerJoinEvent event){
         if(event.getPlayer().isOp() || event.getPlayer().hasPermission("smuhc.admin")){
             event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.AQUA + "SuperMegaUltraHardcore currently running.");
-        } if (event.getPlayer().getUniqueId().toString().equalsIgnoreCase("1ed071ee-25e2-44cc-9bda-f5442b92143e") || event.getPlayer().getUniqueId().toString().equalsIgnoreCase("d2f0ac46-9b4d-4a2b-9661-872ba65f9ac9")){
-            Bukkit.getServer().broadcastMessage(SMUHC.smuhcPrefix + ChatColor.YELLOW + "Plugin developer " + ChatColor.AQUA + event.getPlayer().getName() + ChatColor.YELLOW + " has joined");
-            event.setJoinMessage(null);
+
+        } if (event.getPlayer().getUniqueId().toString().equalsIgnoreCase("1ed071ee-25e2-44cc-9bda-f5442b92143e") || event.getPlayer().getUniqueId().toString().equalsIgnoreCase("d2f0ac46-9b4d-4a2b-9661-872ba65f9ac9")) {
+            //if (broadcast == true) {
+                Bukkit.getServer().broadcastMessage(SMUHC.smuhcPrefix + ChatColor.YELLOW + "Plugin developer " + ChatColor.AQUA + event.getPlayer().getName() + ChatColor.YELLOW + " has joined");
+                event.setJoinMessage(null);
+           // }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onPlayerCraft(PrepareItemCraftEvent event) {
+        if (event.getRecipe().getResult().getType().equals(Material.SHIELD) || event.getRecipe().getResult().getType().equals(Material.CROSSBOW)) {
+            event.getInventory().setResult(new ItemStack(Material.AIR));
+            for (HumanEntity he : event.getViewers()) {
+                if (he instanceof Player) {
+                    he.sendMessage(SMUHC.smuhcPrefix + ChatColor.WHITE +  "You cannot craft shields or crossbows in " + ChatColor.RED + "SuperMegaUltraHardcore!");
+                    ((Player) he).playSound(he.getLocation(), Sound.BLOCK_GLASS_BREAK, 1,1);
+                }
+            }
         }
     }
 
@@ -50,10 +69,10 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerInteract(PlayerInteractEvent event){
+    public void onPlayerInteract(PlayerInteractEvent event) {
         //Golden Apple
         if (event.hasItem() && event.getItem().getType().equals(Material.GOLDEN_APPLE)) {
-            if(event.getPlayer().getGameMode().equals(GameMode.CREATIVE)){
+            if (event.getPlayer().getGameMode().equals(GameMode.CREATIVE)) {
                 //Do nothing because this literally crashes the entire server lol
             } else {
                 event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 2400, 1));
@@ -61,35 +80,21 @@ public class PlayerListener implements Listener {
                 event.getPlayer().setFoodLevel(event.getPlayer().getFoodLevel() + 4);
                 event.getPlayer().getInventory().remove(Material.GOLDEN_APPLE);
             }
-            //Shields
-        } if (event.hasItem() && event.getItem().getType().equals(Material.SHIELD)){
-            event.setCancelled(true);
-            event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.WHITE +  "You cannot use shields in " + ChatColor.RED + "SuperMegaUltraHardcore!");
-            event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_GLASS_BREAK, 1,1);
-            event.getPlayer().getInventory().remove(Material.SHIELD);
+        }
 
-            //Crossbows
-        } if (event.hasItem() && event.getItem().getType().equals(Material.CROSSBOW)){
-            event.setCancelled(true);
-            event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.WHITE +  "You cannot use crossbows in " + ChatColor.RED + "SuperMegaUltraHardcore!");
-            event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_GLASS_BREAK, 1,1);
-            event.getPlayer().getInventory().remove(Material.CROSSBOW);
-
-            //Totem of Undying
-        } if (event.hasItem() && event.getItem().getType().equals(Material.TOTEM_OF_UNDYING)){
+        if (event.hasItem() && event.getItem().getType().equals(Material.TOTEM_OF_UNDYING)) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.WHITE + "You cannot use Totem of Undying in " + ChatColor.RED + "SuperMegaUltraHardcore!");
-            event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_GLASS_BREAK, 1,1);
+            event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_GLASS_BREAK, 1, 1);
             event.getPlayer().getInventory().remove(Material.TOTEM_OF_UNDYING);
-        } if (event.hasItem() && event.getItem().getType().equals(Material.DIAMOND_HOE)){
-            event.setCancelled(true);
 
-            //Super Mega Death Rocket
-        } if (event.hasItem() && event.getItem().equals(SMUHCItemFactory.FishBones())) {
+        }
+
+        if (event.hasItem() && event.getItem().equals(SMUHCItemFactory.FishBones())) {
             if (event.getAction().equals(Action.RIGHT_CLICK_AIR) || event.getAction().equals(Action.LEFT_CLICK_AIR)) {
-                if(cooldowns.containsKey(event.getPlayer().getName())){
+                if (cooldowns.containsKey(event.getPlayer().getName())) {
                     //Player is inside HashMap
-                    if(cooldowns.get(event.getPlayer().getName()) > System.currentTimeMillis()){
+                    if (cooldowns.get(event.getPlayer().getName()) > System.currentTimeMillis()) {
                         //Player has time left to wait
                         long timeLeft = (cooldowns.get(event.getPlayer().getName()) - System.currentTimeMillis()) / 1000;
                         event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.RED + "You have to wait " + ChatColor.AQUA + timeLeft + ChatColor.RED + " seconds before using that again.");
@@ -119,13 +124,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerHandSwap(PlayerSwapHandItemsEvent event){
-        if (event.getMainHandItem().getType().equals(Material.SHIELD) || event.getOffHandItem().getType().equals(Material.SHIELD)) {
-            event.setCancelled(true);
-            event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.WHITE + "You cannot use shields in " + ChatColor.RED + "SuperMegaUltraHardcore!");
-            event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_GLASS_BREAK, 1,1);
-            event.getPlayer().getInventory().remove(Material.SHIELD);
-
-        } if (event.getMainHandItem().getType().equals(Material.TOTEM_OF_UNDYING) || event.getOffHandItem().getType().equals(Material.TOTEM_OF_UNDYING)){
+         if (event.getMainHandItem().getType().equals(Material.TOTEM_OF_UNDYING) || event.getOffHandItem().getType().equals(Material.TOTEM_OF_UNDYING)){
             event.setCancelled(true);
             event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.WHITE + "You cannot use Totem of Undying in " + ChatColor.RED + "SuperMegaUltraHardcore!");
             event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_GLASS_BREAK, 1,1);
@@ -197,3 +196,4 @@ public class PlayerListener implements Listener {
         }
     }
 }
+

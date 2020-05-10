@@ -1,7 +1,8 @@
 package com.ethanpilz.smuhc;
 
+import com.ethanpilz.smuhc.command.AdminCommand;
 import com.ethanpilz.smuhc.command.SuperMegaDeathRocketCommand;
-import com.ethanpilz.smuhc.components.SuperMegaDeathRocketComponent;
+import com.ethanpilz.smuhc.components.rocket.SuperMegaDeathRocketComponent;
 import com.ethanpilz.smuhc.listener.PlayerListener;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -16,12 +17,16 @@ public class SMUHC extends JavaPlugin {
     public static final String smuhcPrefix = ChatColor.DARK_GRAY + "[" + ChatColor.RESET + ChatColor.RED + "SMUHC" + ChatColor.DARK_GRAY + "] " + ChatColor.WHITE;
     public static final Logger log = Logger.getLogger("Minecraft");
     public static Plugin plugin;
+    public static final String consolePrefix = "[SuperMegaUltraHardcore]";
 
     @Override
     public void onEnable(){
 
-        //Logger
-        Bukkit.getLogger().log(Level.INFO, smuhcPrefix + "SuperMegaUltraHardcore enabled.");
+        long startTimeInMilliseconds = System.currentTimeMillis();
+
+        //Config
+        getConfig().options().copyDefaults();
+        saveDefaultConfig();
 
         //Listener
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
@@ -31,15 +36,20 @@ public class SMUHC extends JavaPlugin {
 
         //Commands
         getCommand("supermegadeathrocket").setExecutor(new SuperMegaDeathRocketCommand());
+        getCommand("smuhc").setExecutor(new AdminCommand());
 
         //Recipe
         Bukkit.addRecipe(SuperMegaDeathRocketComponent.Recipe());
 
+        //Startup complete
+        Bukkit.getLogger().log(Level.INFO, consolePrefix + " Startup complete - took " + (System.currentTimeMillis() - startTimeInMilliseconds) + " ms");
     }
     public void onDisable(){
 
         //Logger
-        Bukkit.getLogger().log(Level.INFO, smuhcPrefix + "SuperMegaUltraHardcore disabled.");
+        Bukkit.getLogger().log(Level.INFO, consolePrefix + "SuperMegaUltraHardcore disabled.");
+
+        plugin = null;
 
     }
 }

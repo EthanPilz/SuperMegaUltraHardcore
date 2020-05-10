@@ -11,6 +11,7 @@ import java.util.Arrays;
 
 public class SMUHCItemFactory {
 
+    //Super Mega Death Rocket, also known as FishBones
     public static ItemStack FishBones(){
 
         ItemStack FishBones = new ItemStack(Material.DIAMOND_HOE);

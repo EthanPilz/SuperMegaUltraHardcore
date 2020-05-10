@@ -1,9 +1,7 @@
 package com.ethanpilz.smuhc.components.rocket;
 
 import com.ethanpilz.smuhc.SMUHC;
-import javafx.geometry.BoundingBox;
 import org.bukkit.*;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
