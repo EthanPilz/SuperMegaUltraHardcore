@@ -31,10 +31,14 @@ public class AdminCommand implements CommandExecutor {
                     sender.sendMessage(SMUHC.smuhcPrefix + ChatColor.YELLOW + "No sub command provided. Options: help, version, reload");
 
                 } else if (args[0].equalsIgnoreCase("reload")) {
-                    sender.sendMessage(SMUHC.smuhcPrefix + ChatColor.GREEN + "Config file reloaded.");
                     SMUHC.plugin.reloadConfig();
                     SMUHC.plugin.saveConfig();
                     SMUHC.plugin.saveDefaultConfig();
+                    sender.sendMessage(SMUHC.smuhcPrefix + ChatColor.GREEN + "Config file reloaded.");
+
+                } else if (args[0].equalsIgnoreCase("version")) {
+                    sender.sendMessage(SMUHC.smuhcPrefix + ChatColor.YELLOW + "Version" + ChatColor.DARK_GRAY + ": " + SMUHC.smuhcPluginVersion);
+
                 }
             } return true;
         }

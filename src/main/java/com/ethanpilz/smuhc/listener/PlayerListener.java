@@ -17,13 +17,8 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerPortalEvent;
-import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,9 +27,7 @@ import java.util.Map;
 
 public class PlayerListener implements Listener {
 
-    Map<String, Long> cooldowns = new HashMap<String, Long>();
-    boolean broadcast = SMUHC.plugin.getConfig().getBoolean("broadcast");
-
+    public Map<String, Long> cooldowns = new HashMap<>();
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerJoin(PlayerJoinEvent event){
@@ -42,7 +35,7 @@ public class PlayerListener implements Listener {
             event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.AQUA + "SuperMegaUltraHardcore currently running.");
 
         } if (event.getPlayer().getUniqueId().toString().equalsIgnoreCase("1ed071ee-25e2-44cc-9bda-f5442b92143e") || event.getPlayer().getUniqueId().toString().equalsIgnoreCase("d2f0ac46-9b4d-4a2b-9661-872ba65f9ac9")) {
-            if (broadcast) {
+            if (SMUHC.plugin.getConfig().getBoolean("broadcast")) {
                 Bukkit.getServer().broadcastMessage(SMUHC.smuhcPrefix + ChatColor.YELLOW + "Plugin developer " + ChatColor.AQUA + event.getPlayer().getName() + ChatColor.YELLOW + " has joined");
                 event.setJoinMessage(null);
             }
@@ -70,17 +63,6 @@ public class PlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
-        //Golden Apple
-        if (event.hasItem() && event.getItem().getType().equals(Material.GOLDEN_APPLE)) {
-            if (event.getPlayer().getGameMode().equals(GameMode.CREATIVE)) {
-                //Do nothing because this literally crashes the entire server lol
-            } else {
-                event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 2400, 1));
-                event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 2));
-                event.getPlayer().setFoodLevel(event.getPlayer().getFoodLevel() + 4);
-                event.getPlayer().getInventory().remove(Material.GOLDEN_APPLE);
-            }
-        }
 
         if (event.hasItem() && event.getItem().getType().equals(Material.TOTEM_OF_UNDYING)) {
             event.setCancelled(true);
@@ -98,23 +80,23 @@ public class PlayerListener implements Listener {
                         //Player has time left to wait
                         long timeLeft = (cooldowns.get(event.getPlayer().getName()) - System.currentTimeMillis()) / 1000;
                         event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.RED + "You have to wait " + ChatColor.AQUA + timeLeft + ChatColor.RED + " seconds before using that again.");
+                        event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_GLASS_BREAK, 1, 30);
                         return;
                     }
                 }
 
                 cooldowns.put(event.getPlayer().getName(), System.currentTimeMillis() + (60 * 1000));
                 Bukkit.getServer().broadcastMessage(SMUHC.smuhcPrefix + ChatColor.AQUA + event.getPlayer().getName() + ChatColor.DARK_GRAY + ":" + ChatColor.GREEN + " Bye bye!");
-                event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE, 1, 1);
-                event.getPlayer().sendTitle("", ChatColor.RED + "Super Mega Death Rocket firing...", 5, 20, 5);
+                event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 1);
+                event.getPlayer().sendTitle("", ChatColor.RED + "Super Mega Death Rocket firing...", 5, 35, 5);
                 Bukkit.getScheduler().scheduleSyncDelayedTask(SMUHC.plugin, new Runnable() {
                     @Override
                     public void run() {
 
                         new Rocket(event.getPlayer(), event.getPlayer().getEyeLocation());
-                        event.getPlayer().getLocation().getWorld().spawnParticle(Particle.FIREWORKS_SPARK, event.getPlayer().getLocation(), 100, 0, 1, 0.5);
                         Bukkit.getServer().broadcastMessage(SMUHC.smuhcPrefix + ChatColor.AQUA + event.getPlayer().getName() + ChatColor.RED + " has just fired the Super Mega Death Rocket!");
                     }
-                }, 20L);
+                }, 40L);
 
             } else {
                 event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.RED + "This is an extremely powerful weapon, it cannot be detonated close to you! Aim far away!");
@@ -182,7 +164,7 @@ public class PlayerListener implements Listener {
     public void onPlayerBreakBlock(BlockBreakEvent event){
         if (event.getBlock().getType().equals(Material.GOLD_ORE)){
             event.getBlock().getWorld().spawnParticle(Particle.END_ROD, event.getBlock().getLocation(), 20, 0, 0, 0, 0.1);
-            event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_NOTE_BLOCK_BIT, 5, 5);
+            event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 1, 40);
         }
     }
     @EventHandler(priority = EventPriority.NORMAL)
@@ -193,6 +175,12 @@ public class PlayerListener implements Listener {
             event.getEntity().playSound(event.getEntity().getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 1);
             Bukkit.getServer().broadcastMessage(SMUHC.smuhcPrefix + ChatColor.AQUA + event.getEntity().getName() + ChatColor.RED + " has been killed by " + ChatColor.AQUA + event.getEntity().getKiller().getName());
 
+        }
+    }
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onPlayerEat(PlayerItemConsumeEvent event) {
+        if(event.getItem().getType().equals(Material.GOLDEN_APPLE)){
+            event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 1, 40);
         }
     }
 }

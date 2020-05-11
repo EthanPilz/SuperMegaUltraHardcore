@@ -18,6 +18,7 @@ public class SMUHC extends JavaPlugin {
     public static final Logger log = Logger.getLogger("Minecraft");
     public static Plugin plugin;
     public static final String consolePrefix = "[SuperMegaUltraHardcore]";
+    public static final String smuhcPluginVersion = "1.0";
 
     @Override
     public void onEnable(){
@@ -28,7 +29,6 @@ public class SMUHC extends JavaPlugin {
         plugin = this;
 
         //Config
-        getConfig().options().copyDefaults();
         saveDefaultConfig();
 
         //Listener

@@ -24,10 +24,12 @@ public class Rocket extends BukkitRunnable {
 
         item.setPickupDelay(30);
         new InstantRocket(FireworkEffect.builder().with(FireworkEffect.Type.BURST).withColor(Color.RED).withFlicker().withFade(Color.ORANGE).build(), item.getLocation());
-        if(item == null || item.isOnGround() || item.isDead() || item.isInvulnerable()){
+        if(item == null || item.isOnGround() || item.isDead() || item.isInvulnerable() || item.getLocation().getBlock().isLiquid()){
             item.getLocation().getWorld().createExplosion(item.getLocation(), 15,true);
             item.getLocation().getWorld().createExplosion(item.getLocation(), 15,true);
             item.getLocation().getWorld().createExplosion(item.getLocation(), 15,true);
+            item.getLocation().getWorld().playSound(item.getLocation(), Sound.ENTITY_ENDER_DRAGON_DEATH, 1, 100);
+            item.getLocation().getWorld().spawnParticle(Particle.END_ROD, item.getLocation(), 1000, 0, 2, 0, 0.1);
             cancel();
             item.remove();
         }

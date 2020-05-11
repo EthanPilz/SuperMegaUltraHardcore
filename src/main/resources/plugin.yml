@@ -4,7 +4,6 @@ version: '1.0'
 api-version: '1.14'
 description: UHC Client
 author: Ethan Pilz
-config: resources.defaults.config
 commands:
   smuhc:
     description: Base command for Super Mega Ultra Hardcore
