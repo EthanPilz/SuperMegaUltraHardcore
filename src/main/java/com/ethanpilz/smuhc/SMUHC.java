@@ -1,12 +1,16 @@
 package com.ethanpilz.smuhc;
 
-import com.ethanpilz.smuhc.command.AdminCommand;
+import com.ethanpilz.smuhc.command.CommandHandler;
 import com.ethanpilz.smuhc.command.SuperMegaDeathRocketCommand;
+import com.ethanpilz.smuhc.components.arena.Arena;
 import com.ethanpilz.smuhc.components.rocket.SuperMegaDeathRocketComponent;
+import com.ethanpilz.smuhc.controller.ArenaController;
+import com.ethanpilz.smuhc.controller.PlayerController;
+import com.ethanpilz.smuhc.io.InputOutput;
 import com.ethanpilz.smuhc.listener.PlayerListener;
+import com.ethanpilz.smuhc.manager.setup.ArenaCreationManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.logging.Level;
@@ -16,9 +20,17 @@ public class SMUHC extends JavaPlugin {
 
     public static final String smuhcPrefix = ChatColor.DARK_GRAY + "[" + ChatColor.RESET + ChatColor.RED + "SMUHC" + ChatColor.DARK_GRAY + "] " + ChatColor.WHITE;
     public static final Logger log = Logger.getLogger("Minecraft");
-    public static Plugin plugin;
+    public static SMUHC instance;
     public static final String consolePrefix = "[SuperMegaUltraHardcore]";
     public static final String smuhcPluginVersion = "1.0";
+
+    //Game Components
+    public static ArenaController arenaController;
+    public static PlayerController playerController;
+
+    //Global Managers
+    public static InputOutput inputOutput;
+    public static ArenaCreationManager arenaCreationManager;
 
     @Override
     public void onEnable(){
@@ -26,30 +38,58 @@ public class SMUHC extends JavaPlugin {
         long startTimeInMilliseconds = System.currentTimeMillis();
 
         //Register Plugin for tasks
-        plugin = this;
+        SMUHC.instance = this;
 
         //Config
-        saveDefaultConfig();
+        getConfig().addDefault("broadcast", true);
+        this.saveDefaultConfig();
+
+        //Initialize Game Components
+        arenaController = new ArenaController();
+        playerController = new PlayerController();
+        arenaCreationManager = new ArenaCreationManager();
+
+        //InputOutput
+        inputOutput = new InputOutput();
+        inputOutput.prepareDB();
+        inputOutput.updateDB();
+        inputOutput.loadArenas();
 
         //Listener
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 
+        if (!Bukkit.getPluginManager().isPluginEnabled("SidebarAPI"))
+        {
+            log.log(Level.SEVERE, consolePrefix + "Sidebar API not found - required for gameplay!!");
+            this.setEnabled(false);
+            return;
+        }
+
         //Commands
         getCommand("supermegadeathrocket").setExecutor(new SuperMegaDeathRocketCommand());
-        getCommand("smuhc").setExecutor(new AdminCommand());
+        getCommand("smuhc").setExecutor(new CommandHandler());
 
         //Recipe
         Bukkit.addRecipe(SuperMegaDeathRocketComponent.Recipe());
 
         //Startup complete
-        Bukkit.getLogger().log(Level.INFO, consolePrefix + " Startup complete - took " + (System.currentTimeMillis() - startTimeInMilliseconds) + " ms");
+        Bukkit.getLogger().log(Level.INFO, consolePrefix + " Startup complete. Took " + (System.currentTimeMillis() - startTimeInMilliseconds) + " ms");
     }
+
     public void onDisable(){
+
+        //End every game, restore players, etc.
+        for (Arena arena : arenaController.getArenas().values())
+        {
+            arena.getGameManager().clearArena();
+        }
 
         //Logger
         Bukkit.getLogger().log(Level.INFO, consolePrefix + "SuperMegaUltraHardcore disabled.");
+        InputOutput.freeConnection();
 
-        plugin = null;
+        instance = null;
 
     }
+
 }

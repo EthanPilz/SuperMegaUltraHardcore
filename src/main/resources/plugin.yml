@@ -4,9 +4,12 @@ version: '1.0'
 api-version: '1.14'
 description: UHC Client
 author: Ethan Pilz
+depend: [SidebarAPI]
 commands:
   smuhc:
     description: Base command for Super Mega Ultra Hardcore
   supermegadeathrocket:
     description: Gives the Super Mega Death Rocket
 permissions:
+  smuhc.admin:
+    description: Gives access to admin commands

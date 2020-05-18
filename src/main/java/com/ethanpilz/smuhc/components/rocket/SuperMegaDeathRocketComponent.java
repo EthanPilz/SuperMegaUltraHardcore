@@ -13,7 +13,7 @@ public class SuperMegaDeathRocketComponent {
 
         ItemStack FishBones = SMUHCItemFactory.FishBones();
 
-        NamespacedKey key = new NamespacedKey(SMUHC.plugin, "super_mega_death_rocket");
+        NamespacedKey key = new NamespacedKey(SMUHC.instance, "super_mega_death_rocket");
 
         ShapedRecipe recipe = new ShapedRecipe(key, FishBones);
         recipe.shape("TGT", "GHG", "TGT");

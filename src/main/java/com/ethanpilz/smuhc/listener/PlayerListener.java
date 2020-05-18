@@ -2,6 +2,7 @@ package com.ethanpilz.smuhc.listener;
 
 import com.ethanpilz.smuhc.SMUHC;
 import com.ethanpilz.smuhc.components.rocket.Rocket;
+import com.ethanpilz.smuhc.exceptions.player.PlayerNotPlayingException;
 import com.ethanpilz.smuhc.factory.SMUHCItemFactory;
 import org.bukkit.*;
 import org.bukkit.entity.EntityType;
@@ -29,16 +30,16 @@ public class PlayerListener implements Listener {
 
     public Map<String, Long> cooldowns = new HashMap<>();
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event){
         if(event.getPlayer().isOp() || event.getPlayer().hasPermission("smuhc.admin")){
             event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.AQUA + "SuperMegaUltraHardcore currently running.");
 
         } if (event.getPlayer().getUniqueId().toString().equalsIgnoreCase("1ed071ee-25e2-44cc-9bda-f5442b92143e") || event.getPlayer().getUniqueId().toString().equalsIgnoreCase("d2f0ac46-9b4d-4a2b-9661-872ba65f9ac9")) {
-            if (SMUHC.plugin.getConfig().getBoolean("broadcast")) {
+            //if (SMUHC.plugin.getConfig().getBoolean("broadcast")) {
                 Bukkit.getServer().broadcastMessage(SMUHC.smuhcPrefix + ChatColor.YELLOW + "Plugin developer " + ChatColor.AQUA + event.getPlayer().getName() + ChatColor.YELLOW + " has joined");
                 event.setJoinMessage(null);
-            }
+           // }
         }
     }
 
@@ -89,7 +90,7 @@ public class PlayerListener implements Listener {
                 Bukkit.getServer().broadcastMessage(SMUHC.smuhcPrefix + ChatColor.AQUA + event.getPlayer().getName() + ChatColor.DARK_GRAY + ":" + ChatColor.GREEN + " Bye bye!");
                 event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 1);
                 event.getPlayer().sendTitle("", ChatColor.RED + "Super Mega Death Rocket firing...", 5, 35, 5);
-                Bukkit.getScheduler().scheduleSyncDelayedTask(SMUHC.plugin, new Runnable() {
+                Bukkit.getScheduler().scheduleSyncDelayedTask(SMUHC.instance, new Runnable() {
                     @Override
                     public void run() {
 
@@ -143,7 +144,7 @@ public class PlayerListener implements Listener {
                 event.getPlayer().sendTitle("", ChatColor.RED + "Bed detonating...", 20, 60, 20);
                 event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 5,5);
                 event.getBlock().getLocation().getWorld().spawnParticle(Particle.CRIT_MAGIC, event.getBlock().getLocation(), 100, 0, 1, 0, 0.3);
-                Bukkit.getScheduler().scheduleSyncDelayedTask(SMUHC.plugin, new Runnable() {
+                Bukkit.getScheduler().scheduleSyncDelayedTask(SMUHC.instance, new Runnable() {
                     @Override
                     public void run() {
 
@@ -183,5 +184,13 @@ public class PlayerListener implements Listener {
             event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 1, 40);
         }
     }
+    /*@EventHandler(priority = EventPriority.NORMAL)
+    public void onPlayerLeave(PlayerQuitEvent event) {
+        try {
+            SMUHC.arenaController.getPlayerArena(event.getPlayer());
+        } catch (PlayerNotPlayingException e){
+            //dont fuckin care
+        }
+    }*/
 }
 

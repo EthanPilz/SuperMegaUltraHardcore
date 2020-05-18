@@ -17,7 +17,8 @@ public class SuperMegaDeathRocketCommand implements CommandExecutor {
 
             Player player = (Player) sender;
             player.getInventory().addItem(SMUHCItemFactory.FishBones());
-            Bukkit.getServer().broadcastMessage(SMUHC.smuhcPrefix + ChatColor.AQUA + sender.getName() + ChatColor.DARK_GRAY + ":" + ChatColor.GREEN + " Wanna see something" + ChatColor.ITALIC + " REALLY " + ChatColor.RESET + ChatColor.GREEN + "cool?");
+            Bukkit.getServer().broadcastMessage(SMUHC.smuhcPrefix + ChatColor.AQUA + sender.getName() + ChatColor.DARK_GRAY
+                    + ":" + ChatColor.GREEN + " Wanna see something" + ChatColor.ITALIC + " REALLY " + ChatColor.RESET + ChatColor.GREEN + "cool?");
 
         }
         return true;
