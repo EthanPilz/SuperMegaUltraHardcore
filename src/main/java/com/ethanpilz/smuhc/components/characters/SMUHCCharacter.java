@@ -1,5 +1,6 @@
-package com.ethanpilz.smuhc.components;
+package com.ethanpilz.smuhc.components.characters;
 
+import com.ethanpilz.smuhc.components.SMUHCPlayer;
 import com.ethanpilz.smuhc.components.arena.Arena;
 import com.ethanpilz.smuhc.experience.XPManager;
 import org.bukkit.Bukkit;
@@ -21,6 +22,7 @@ public class SMUHCCharacter {
     private boolean originalAllowFly;
 
     SMUHCCharacter(SMUHCPlayer player, Arena arena) {
+
         this.smuhcPlayer = player;
         this.arena = arena;
         this.xpManager = new XPManager(smuhcPlayer, arena);
@@ -97,9 +99,9 @@ public class SMUHCCharacter {
     public void enterWaitingRoom() {
         teleportToWaitingRoom();
         setDefaultSurvivalTraits();
-        giveWaitingRoomItems();
-        //getF13Player().getWaitingPlayerStatsDisplayManager().displayStatsScoreboard();
-        makePlayerVisibleToEveryone(true); //In case of invisibility bug
+        //giveWaitingRoomItems();
+        getSMUHCPlayer().getWaitingPlayerStatsDisplayManager().displayStatsScoreboard();
+        //makePlayerVisibleToEveryone(true); //In case of invisibility bug
 
     }
 
@@ -107,6 +109,7 @@ public class SMUHCCharacter {
      * Removes the character from the game and restores them to pre-game status
      */
     public void leaveGame() {
+
         teleportToReturnPoint();
 
         if (arena.getGameManager().isGameWaiting() || arena.getGameManager().isGameEmpty()) {
@@ -134,13 +137,14 @@ public class SMUHCCharacter {
             }
 
             if (arena.getGameManager().getPlayerManager().isPlaying(getSMUHCPlayer())) {
-                SMUHCPlayer player = arena.getGameManager().getPlayerManager().getPlayer(getSMUHCPlayer());
+
+                Fighter fighter = arena.getGameManager().getPlayerManager().getFighter(getSMUHCPlayer());
 
                 //Hide the stats bars
                 //smuhcPlayer.getCounselorStatsDisplayManager().hideStats();
 
                 if (getSMUHCPlayer().isOnline()) {
-                    arena.getGameManager().getPlayerManager().getPlayer(getSMUHCPlayer()).removeAllPotionEffects();
+                    //arena.getGameManager().getPlayerManager().getFighter(fighter).removeAllPotionEffects();
                     arena.getGameManager().getGameScoreboardManager().hideFromPlayer(getSMUHCPlayer().getBukkitPlayer());
 
                     makePlayerVisibleToEveryone(true);
@@ -159,8 +163,7 @@ public class SMUHCCharacter {
     /**
      * Performs all necessary tasks when the game begins
      */
-    public void prepareForGameplay()
-    {
+    public void prepareForGameplay() {
         //Clear their inventory of any waiting room goodies
         getSMUHCPlayer().getBukkitPlayer().getInventory().clear();
 

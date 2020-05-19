@@ -1,10 +1,12 @@
 package com.ethanpilz.smuhc.manager.game;
 
 import com.ethanpilz.smuhc.SMUHC;
-import com.ethanpilz.smuhc.components.SMUHCCharacter;
+import com.ethanpilz.smuhc.components.characters.Fighter;
+import com.ethanpilz.smuhc.components.characters.SMUHCCharacter;
 import com.ethanpilz.smuhc.components.SMUHCPlayer;
-import com.ethanpilz.smuhc.components.Spectator;
+import com.ethanpilz.smuhc.components.characters.Spectator;
 import com.ethanpilz.smuhc.components.arena.Arena;
+import com.ethanpilz.smuhc.components.level.XPAward;
 import com.ethanpilz.smuhc.exceptions.game.GameInProgressException;
 import com.ethanpilz.smuhc.exceptions.player.PlayerAlreadyPlayingException;
 import org.bukkit.Bukkit;
@@ -16,13 +18,14 @@ import org.bukkit.inventory.meta.FireworkMeta;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.UUID;
 
 public class PlayerManager {
     private Arena arena;
 
     //Game Players
     private HashSet<SMUHCPlayer> players;
-    private HashMap<SMUHCPlayer, SMUHCCharacter> fighters;
+    private HashMap<SMUHCPlayer, Fighter> fighters;
 
     //Game Stat
     private HashSet<SMUHCPlayer> alivePlayers;
@@ -36,9 +39,10 @@ public class PlayerManager {
     PlayerManager(Arena arena) {
         this.arena = arena;
         this.players = new HashSet<>();
+        this.fighters = new HashMap<>();
         this.alivePlayers = new HashSet<>();
         this.deadPlayers = new HashSet<>();
-        //this.spectators = new HashMap<>();
+        this.spectators = new HashMap<>();
     }
 
     /**
@@ -46,9 +50,10 @@ public class PlayerManager {
      */
     public void resetPlayerStorage() {
         players.clear();
+        fighters.clear();
         alivePlayers.clear();
         deadPlayers.clear();
-       // spectators.clear();
+        spectators.clear();
     }
 
     /**
@@ -60,16 +65,18 @@ public class PlayerManager {
 
     /**
      * Adds player to the current game's player list
-     * @param player F13Player
+     *
+     * @param player SMUHCPlayer
      */
     private void addPlayer(SMUHCPlayer player) {
-        players.add(player);
+        fighters.put(player, getFighter(player));
 
     }
 
     /**
      * Removes player from current game's player list
-     * @param player F13Player
+     *
+     * @param player SMUHCPlayer
      */
     private void removePlayer(SMUHCPlayer player) {
         players.remove(player);
@@ -80,8 +87,35 @@ public class PlayerManager {
         return players.contains(player);
     }
 
-    public SMUHCPlayer getPlayer(SMUHCPlayer player) {
-        return player;
+    public Fighter getFighter(SMUHCPlayer player) {
+        return fighters.get(player);
+    }
+
+    /**
+     * @param player F13Player
+     * @return If the player is a counselor
+     */
+    public boolean isFighter(SMUHCPlayer player) {
+        return fighters.containsKey(player);
+    }
+
+    /**
+     * Assigns the provided player as a counselor
+     *
+     * @param player F13Player
+     */
+    private void assignFighter(SMUHCPlayer player) {
+        addFighter(new Fighter(player, arena));
+    }
+
+
+    /**
+     * Adds new counselor
+     *
+     * @param counselor Counselor object
+     */
+    private void addFighter(Fighter counselor) {
+        fighters.put(counselor.getSMUHCPlayer(), counselor);
     }
 
 
@@ -114,7 +148,8 @@ public class PlayerManager {
 
     /**
      * Adds player to the alive player list
-     * @param player F13Player
+     *
+     * @param player SMUHCPlayer
      */
     private void addAlivePlayer(SMUHCPlayer player) {
         alivePlayers.add(player);
@@ -157,7 +192,7 @@ public class PlayerManager {
     /**
      * Removes player from the alive player list
      *
-     * @param player F13Player
+     * @param player SMUHCPlayer
      */
     private void removeAlivePlayer(SMUHCPlayer player) {
         alivePlayers.remove(player);
@@ -171,7 +206,7 @@ public class PlayerManager {
     }
 
     /**
-     * @param player F13Player
+     * @param player SMUHCPlayer
      * @return If the player is alive
      */
     public boolean isAlive(SMUHCPlayer player) {
@@ -187,7 +222,8 @@ public class PlayerManager {
 
     /**
      * Adds player to the dead player list
-     * @param player F13Player
+     *
+     * @param player SMUHCPlayer
      */
     public void addDeadPlayer(SMUHCPlayer player) {
         deadPlayers.add(player);
@@ -195,10 +231,12 @@ public class PlayerManager {
 
     /**
      * Removes player from the dead player list
-     * @param player F13Player
+     *
+     * @param player SMUHCPlayer
      */
     public void removeDeadPlayer(SMUHCPlayer player) {
-        deadPlayers.remove(player); }
+        deadPlayers.remove(player);
+    }
 
     /**
      * @return Number of players dead
@@ -237,7 +275,7 @@ public class PlayerManager {
     /**
      * Performs actions when a player dies in game
      *
-     * @param player F13Player
+     * @param player SMUHCPlayer
      */
     public void onPlayerDeath(SMUHCPlayer player) {
         if (arena.getGameManager().isGameInProgress()) {
@@ -248,19 +286,19 @@ public class PlayerManager {
             //Let everyone know
             sendMessageToAllPlayers(ChatColor.GRAY + player.getBukkitPlayer().getName());
 
-                //They're a normal player, see if there are still others alive
-                if (getNumberOfPlayersAlive() >= 1) //since jason is still presumably alive
-                {
-                    arena.getGameManager().getPlayerManager().fireFirework(player, Color.RED);
-                    //Enter spectating mode
-                    //getCounselor(player).transitionToSpectatingMode();
-                    //becomeSpectator(player);
-                } else {
-                    //They were the last to die, so end the game
-                    arena.getGameManager().endGame();
-                }
+            //They're a normal player, see if there are still others alive
+            if (getNumberOfPlayersAlive() >= 1) //since jason is still presumably alive
+            {
+                arena.getGameManager().getPlayerManager().fireFirework(player, Color.RED);
+                //Enter spectating mode
+                //getCounselor(player).transitionToSpectatingMode();
+                //becomeSpectator(player);
+            } else {
+                //They were the last to die, so end the game
+                arena.getGameManager().endGame();
             }
         }
+    }
 
     public HashMap<SMUHCPlayer, Spectator> getSpectators() {
         return spectators;
@@ -278,14 +316,14 @@ public class PlayerManager {
     /**
      * Removes a spectator from the HashMap
      *
-     * @param player F13Player
+     * @param player SMUHCPlayer
      */
     private void removeSpectator(SMUHCPlayer player) {
         spectators.remove(player);
     }
 
     /**
-     * @param player F13Player
+     * @param player SMUHCPlayer
      * @return Spectator
      */
     private Spectator getSpectator(SMUHCPlayer player) {
@@ -300,7 +338,7 @@ public class PlayerManager {
     }
 
     /**
-     * @param player F13Player
+     * @param player SMUHCPlayer
      * @return If the player is a spectator
      */
     public boolean isSpectator(SMUHCPlayer player) {
@@ -309,7 +347,8 @@ public class PlayerManager {
 
     /**
      * Adds the player as a spectator and performs all actions to put them into the game
-     * @param player F13Player
+     *
+     * @param player SMUHCPlayer
      */
     public void becomeSpectator(SMUHCPlayer player) {
         addSpectator(new Spectator(player, arena));
@@ -326,7 +365,7 @@ public class PlayerManager {
     /**
      * Removes the player as a spectator and performs all actions to remove them from the game
      *
-     * @param player F13Player
+     * @param player SMUHCPlayer
      */
     public void leaveSpectator(SMUHCPlayer player) {
         //Need to remove from player lists if they're just a spectator
@@ -337,10 +376,12 @@ public class PlayerManager {
 
         removeSpectator(player);
     }
+
     /**
      * Fires a firework
-     * @param player F13Player whos location to fire the firework at
-     * @param color Firework color
+     *
+     * @param player SMUHCPlayer whose location to fire the firework at
+     * @param color  Firework color
      */
     public void fireFirework(SMUHCPlayer player, Color color) {
         Firework f = player.getBukkitPlayer().getWorld().spawn(player.getBukkitPlayer().getLocation().getWorld().getHighestBlockAt(player.getBukkitPlayer().getLocation()).getLocation(), Firework.class);
@@ -358,7 +399,7 @@ public class PlayerManager {
     /**
      * Removes player from all game data structures
      *
-     * @param player F13Player
+     * @param player SMUHCPlayer
      */
     private void removePlayerFromDataStructures(SMUHCPlayer player) {
         removePlayer(player);
@@ -370,33 +411,35 @@ public class PlayerManager {
     /**
      * Adds player to the game, if room is available
      *
-     * @param player F13Player
-   */
+     * @param player SMUHCPlayer
+     */
     public synchronized void playerJoinGame(SMUHCPlayer player) throws GameInProgressException {
         if (arena.getGameManager().isGameEmpty() || arena.getGameManager().isGameWaiting()) {
-                try {
-                    //Add to lists
-                    SMUHC.arenaController.addPlayer(player, arena);
-                    addPlayer(player);
+            try {
+                //Add to lists
+                SMUHC.arenaController.addPlayer(player, arena);
+                addPlayer(player);
 
-                    getPlayer(player).enterWaitingRoom();
+                assignFighter(player);
+                getFighter(player).enterWaitingRoom();
 
-                    //Announce arrival
-                    int playerNumber = players.size();
-                    sendMessageToAllPlayers(ChatColor.GREEN + player.getBukkitPlayer().getName() + ChatColor.YELLOW + " has joined the game. There are now " + ChatColor.GREEN + playerNumber + ChatColor.YELLOW + "players in the game.");
+                //Announce arrival
+                int playerNumber = players.size();
+                sendMessageToAllPlayers(ChatColor.GREEN + player.getBukkitPlayer().getName() + ChatColor.YELLOW + " has joined the game. There are now " + ChatColor.GREEN + playerNumber + ChatColor.YELLOW + "players in the game.");
 
-                    if (players.size() == 1) {
-                       // arena.getSignManager().updateJoinSigns(); //If it's just them, update signs
-                    }
+                if (players.size() == 1) {
+                     arena.getSignManager().updateJoinSigns(); //If it's just them, update signs
+                 }
 
-                } catch (PlayerAlreadyPlayingException exception) {
-                    //They're already in the controller global player list
-                    player.getBukkitPlayer().sendMessage(SMUHC.smuhcPrefix + "Failed to add you to game because you're already registered as playing a game.");
-                }
-            } else {
-                throw new GameInProgressException();
+            } catch (PlayerAlreadyPlayingException exception) {
+                //They're already in the controller global player list
+                player.getBukkitPlayer().sendMessage(SMUHC.smuhcPrefix + "Failed to add you to game because you're already registered as playing a game.");
             }
+
+        } else {
+            throw new GameInProgressException();
         }
+    }
 
 
     /**
@@ -419,8 +462,39 @@ public class PlayerManager {
             }
         } else if (isSpectator(player)) {
             arena.getGameManager().getPlayerManager().getSpectator(player).leaveGame();
+        } else {
+            getFighter(player).leaveGame();
         }
 
-    removePlayerFromDataStructures(player);
-}
+        removePlayerFromDataStructures(player);
+    }
+
+    /**
+     * Performs actions when a player logs off of server
+     *
+     * @param player F13Player
+     */
+    public void onPlayerLogout(SMUHCPlayer player) {
+        //Hurry and see if we can teleport them out and clear inventory
+        player.getBukkitPlayer().teleport(arena.getReturnLocation());
+        player.getBukkitPlayer().getInventory().clear();
+
+        //Message everyone in game
+        sendMessageToAllPlayers(SMUHC.smuhcPrefix + ChatColor.AQUA + Bukkit.getOfflinePlayer(UUID.fromString(player.getPlayerUUID())).getName() + ChatColor.RED + " has logged out and left the game.");
+
+        if (!isSpectator(player)) {
+            if (arena.getGameManager().isGameInProgress()) {
+                if (isAlive(player) && getNumberOfPlayersAlive() <= 1) {
+                    //They were the last one
+                    arena.getGameManager().endGame();
+                } else {
+                    getFighter(player).leaveGame();
+                }
+            }
+        } else {
+            //Just a spectator who logged out
+            getSpectator(player).leaveGame();
+        }
+        removePlayerFromDataStructures(player);
+    }
 }

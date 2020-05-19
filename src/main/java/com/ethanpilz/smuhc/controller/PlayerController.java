@@ -2,8 +2,6 @@ package com.ethanpilz.smuhc.controller;
 
 import com.ethanpilz.smuhc.SMUHC;
 import com.ethanpilz.smuhc.components.SMUHCPlayer;
-import com.ethanpilz.smuhc.components.Spectator;
-import com.ethanpilz.smuhc.SMUHC;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -38,8 +36,18 @@ public class PlayerController {
      */
 
     public SMUHCPlayer getPlayer(String uuid){
-        SMUHCPlayer player = new SMUHCPlayer(uuid, 0); //need to change 0 to getXP method
-        return player;
+        if (!doesPlayerExist(uuid)) {
+            //They're not in memory, so let's check the database to see if they exist
+            SMUHC.inputOutput.loadPlayer(uuid);
+
+            if (!doesPlayerExist(uuid)) {
+                //They weren't in the DB, so make new object and store them in DB
+                SMUHCPlayer player = new SMUHCPlayer(uuid, 0);
+                player.storeToDB();
+                addPlayer(player);
+            }
+        }
+        return players.get(uuid);
     }
 
     public void addPlayer(SMUHCPlayer player){

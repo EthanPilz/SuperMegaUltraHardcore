@@ -3,20 +3,22 @@ package com.ethanpilz.smuhc.components;
 import com.ethanpilz.smuhc.SMUHC;
 import com.ethanpilz.smuhc.components.arena.Arena;
 import com.ethanpilz.smuhc.components.level.SMUHCPlayerLevel;
+import com.ethanpilz.smuhc.exceptions.SaveToDatabaseException;
+import com.ethanpilz.smuhc.experience.XPManager;
 import com.ethanpilz.smuhc.manager.display.WaitingPlayerStatsDisplayManager;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
+import java.util.HashSet;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class SMUHCPlayer {
 
     private SMUHCPlayer smuhcPlayer;
     protected Arena arena;
-    //private XPManager xpManager;
+    private XPManager xpManager;
 
 
     //UUID
@@ -29,9 +31,23 @@ public class SMUHCPlayer {
     //Waiting Scoreboard
     private WaitingPlayerStatsDisplayManager waitingPlayerStatsDisplayManager;
 
+    public SMUHCPlayer(String uuid) {
+        this.playerUUID = uuid;
+
+        //Display
+        waitingPlayerStatsDisplayManager = new WaitingPlayerStatsDisplayManager(this);
+    }
+
     public SMUHCPlayer(String uuid, int xp) {
         this.playerUUID = uuid;
+
+        //Values
         experiencePoints = xp;
+        determineLevel();
+        //FridayThe13th.inputOutput.loadPlayerPurchases(this);
+
+        //Display
+        waitingPlayerStatsDisplayManager = new WaitingPlayerStatsDisplayManager(this);
     }
 
     public String getPlayerUUID() {
@@ -42,14 +58,6 @@ public class SMUHCPlayer {
         return Bukkit.getPlayer(UUID.fromString(getPlayerUUID()));
 
     }
-
-    /**
-     * @return Bukkit player
-     */
-    public Player getPlayer() {
-        return getSMUHCPlayer().getBukkitPlayer();
-    }
-
 
     /**
      * @return SMUHCPlayer object
@@ -64,6 +72,18 @@ public class SMUHCPlayer {
 
     public void updateDB() {
         SMUHC.inputOutput.updatePlayer(this);
+    }
+
+    /**
+     * Stores the player in the database
+     */
+    public void storeToDB() {
+        try {
+            SMUHC.inputOutput.storePlayer(this);
+        } catch (SaveToDatabaseException exception) {
+            //Ruh-roh raggy. Couldn't save them, probably means they already exist
+            SMUHC.log.log(Level.WARNING, "Encountered an unexpected error while attempting to save F13 player to database.");
+        }
     }
 
     /**
@@ -143,104 +163,7 @@ public class SMUHCPlayer {
         return Bukkit.getOnlinePlayers().contains(getBukkitPlayer());
     }
 
-    /**
-     * Prepares the player for the waiting room and teleports them in
-     */
-    public void enterWaitingRoom() {
-        teleportToWaitingRoom();
-        //getF13Player().getWaitingPlayerStatsDisplayManager().displayStatsScoreboard();
-        makePlayerVisibleToEveryone(true); //In case of invisibility bug
 
-    }
-
-    /**
-     * Returns the manager for the waiting player stats scoreboard
-     *
-     * @return
-     */
-    public WaitingPlayerStatsDisplayManager getWaitingPlayerStatsDisplayManager() {
-        return waitingPlayerStatsDisplayManager;
-    }
-
-
-
-
-    /**
-     * Removes the character from the game and restores them to pre-game status
-     */
-
-    public void leaveGame() {
-        teleportToReturnPoint();
-
-        if (arena.getGameManager().isGameWaiting() || arena.getGameManager().isGameEmpty()) {
-            if (getSMUHCPlayer().isOnline()) {
-                getSMUHCPlayer().getWaitingPlayerStatsDisplayManager().removeStatsScoreboard();
-                arena.getGameManager().getWaitingCountdownDisplayManager().hideForPlayer(getSMUHCPlayer().getBukkitPlayer());
-                getSMUHCPlayer().getBukkitPlayer().getInventory().clear();
-
-            }
-        } else if (arena.getGameManager().isGameInProgress()) {
-            if (arena.getGameManager().getPlayerManager().isSpectator(getSMUHCPlayer())) {
-                arena.getGameManager().getPlayerManager().leaveSpectator(getSMUHCPlayer());
-
-                //Hide spectator displays
-                arena.getGameManager().getGameCountdownManager().hideFromPlayer(getSMUHCPlayer().getBukkitPlayer());
-                arena.getGameManager().getGameScoreboardManager().hideFromPlayer(getSMUHCPlayer().getBukkitPlayer());
-
-                //Make them visible to everyone again
-                if (getSMUHCPlayer().getBukkitPlayer().isOnline()) {
-                    //Make visible to all players
-                    for (Player player : Bukkit.getOnlinePlayers()) {
-                        player.showPlayer(getSMUHCPlayer().getBukkitPlayer());
-                    }
-                }
-            }
-
-            if (arena.getGameManager().getPlayerManager().isPlaying(getSMUHCPlayer())) {
-                SMUHCPlayer player = arena.getGameManager().getPlayerManager().getPlayer(getSMUHCPlayer());
-
-                //Hide the stats bars
-
-                if (getSMUHCPlayer().isOnline()) {
-
-                    arena.getGameManager().getGameScoreboardManager().hideFromPlayer(getSMUHCPlayer().getBukkitPlayer());
-
-                    makePlayerVisibleToEveryone(true);
-
-                    //Player stats
-                    getSMUHCPlayer().getBukkitPlayer().getInventory().clear();
-                    getSMUHCPlayer().getBukkitPlayer().setHealth(20);
-                    getSMUHCPlayer().getBukkitPlayer().setFoodLevel(20);
-
-                }
-            }
-        }
-    }
-
-        /**
-         * Teleports the player to the arena's waiting room
-         */
-        private void teleportToWaitingRoom() {
-            teleport(arena.getWaitingLocation());
-        }
-
-        /**
-         * Teleports the player to the arena's return point
-         */
-        private void teleportToReturnPoint () {
-            teleport(arena.getReturnLocation());
-        }
-
-        /**
-         * Teleports player to location
-         *
-         * @param location Teleport to location
-         */
-        public void teleport (Location location){
-            if (getSMUHCPlayer().isOnline()) {
-                getSMUHCPlayer().getBukkitPlayer().teleport(location);
-            }
-        }
 
     /**
      * Removes all active potion effects for the player
@@ -273,7 +196,15 @@ public class SMUHCPlayer {
             }
         }
 
-        getPlayer().removePotionEffect(PotionEffectType.INVISIBILITY);
+    }
+
+    /**
+     * Returns the manager for the waiting player stats scoreboard
+     *
+     * @return
+     */
+    public WaitingPlayerStatsDisplayManager getWaitingPlayerStatsDisplayManager() {
+        return waitingPlayerStatsDisplayManager;
     }
 
 }

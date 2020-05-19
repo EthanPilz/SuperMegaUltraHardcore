@@ -1,5 +1,6 @@
-package com.ethanpilz.smuhc.components;
+package com.ethanpilz.smuhc.components.characters;
 
+import com.ethanpilz.smuhc.components.SMUHCPlayer;
 import com.ethanpilz.smuhc.components.arena.Arena;
 import org.bukkit.GameMode;
 

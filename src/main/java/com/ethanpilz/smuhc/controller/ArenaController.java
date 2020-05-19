@@ -116,7 +116,7 @@ public class ArenaController {
      * @return If the player is actively playing within an arena
      */
 
-    public boolean isPlaying(Player player, Arena arena){
+    public boolean isPlaying(Player player){
         return isPlaying(SMUHC.playerController.getPlayer(player));
     }
 

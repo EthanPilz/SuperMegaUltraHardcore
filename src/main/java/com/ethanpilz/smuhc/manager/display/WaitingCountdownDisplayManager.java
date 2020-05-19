@@ -53,7 +53,7 @@ public class WaitingCountdownDisplayManager
      */
     public void updateCountdownValue()
     {
-        float value = ((((float) arena.getGameManager().getWaitingTimeLeft() - 0) * (1 - 0)) / (arena.getSecondsWaitingRoom() - 0)) + 0;
+        float value = ((((float) arena.getGameManager().getWaitingTimeLeft() - 0) * (1)) / (arena.getSecondsWaitingRoom())) + 0;
         waitingBar.setProgress(value);
     }
 }

@@ -14,7 +14,7 @@ public class GameWaitingCountdown implements Runnable {
         public void run() {
             if (arena.getGameManager().isGameWaiting() && arena.getGameManager().getWaitingTimeLeft() > 0) {
                 arena.getGameManager().setWaitingTimeLeft(arena.getGameManager().getWaitingTimeLeft() - 1);
-                //arena.getGameManager().getWaitingCountdownDisplayManager().updateCountdownValue();
+                arena.getGameManager().getWaitingCountdownDisplayManager().updateCountdownValue();
 
             }
         }

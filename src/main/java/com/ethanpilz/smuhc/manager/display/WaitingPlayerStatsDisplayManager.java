@@ -13,12 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WaitingPlayerStatsDisplayManager {
+
     private SMUHCPlayer player;
     private Sidebar statsScoreboard;
 
     public WaitingPlayerStatsDisplayManager(SMUHCPlayer p) {
         player = p;
-        statsScoreboard = new Sidebar(ChatColor.RED + "" + ChatColor.BOLD + "Friday The 13th", SMUHC.instance, 999);
+        statsScoreboard = new Sidebar(ChatColor.RED + "SuperMegaUltraHardcore" , SMUHC.instance, 999);
     }
 
     /**
@@ -90,6 +91,7 @@ public class WaitingPlayerStatsDisplayManager {
      */
     public void displayStatsScoreboard() {
         statsScoreboard.showTo(player.getBukkitPlayer());
+        player.getBukkitPlayer().sendMessage("displayStatsScoreboard code ran now");
     }
 
     /**

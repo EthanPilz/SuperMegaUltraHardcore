@@ -156,7 +156,7 @@ public class GameManager {
      */
     public void checkGameStatus() {
         if (isGameEmpty()) {
-            if (getPlayerManager().getNumberOfPlayers() >= 2) {
+            if (getPlayerManager().getNumberOfPlayers() >= 1) {
                 //There are people waiting and we've reached the min, change to waiting
                 changeGameStatus(GameStatus.Waiting);
             } else {
@@ -167,10 +167,11 @@ public class GameManager {
                 }
             }
         } else if (isGameWaiting()) {
-            if (getPlayerManager().getNumberOfPlayers() >= 2) {
+            if (getPlayerManager().getNumberOfPlayers() >= 1) {
                 if (waitingTimeLeftInSeconds <= 0) {
                     //BEGIN THE GAME
                     changeGameStatus(GameStatus.InProgress);
+
                 } else {
                     getPlayerManager().displayWaitingCountdown();
                 }

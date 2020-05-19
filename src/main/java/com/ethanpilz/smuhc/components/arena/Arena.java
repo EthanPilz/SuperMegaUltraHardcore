@@ -97,6 +97,24 @@ public class Arena {
     private void updateInDB() {
         SMUHC.inputOutput.updateArena(this);
     }
+
+    /**
+     * Deletes the arena
+     */
+    public void delete() {
+        //Cancel all game tasks
+        //TODO
+
+        //Remove from DB
+        SMUHC.inputOutput.deleteArena(getName());
+
+        //Remove signs
+        getSignManager().deleteSigns();
+
+        // arena.getSignManager().markDeleted();
+        //                                    FridayThe13th.arenaController.removeArena(arena);
+        //                                    FridayThe13th.inputOutput.deleteArena(arenaName);
+    }
 }
 
 

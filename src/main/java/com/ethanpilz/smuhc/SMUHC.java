@@ -7,6 +7,7 @@ import com.ethanpilz.smuhc.components.rocket.SuperMegaDeathRocketComponent;
 import com.ethanpilz.smuhc.controller.ArenaController;
 import com.ethanpilz.smuhc.controller.PlayerController;
 import com.ethanpilz.smuhc.io.InputOutput;
+import com.ethanpilz.smuhc.listener.BlockListener;
 import com.ethanpilz.smuhc.listener.PlayerListener;
 import com.ethanpilz.smuhc.manager.setup.ArenaCreationManager;
 import org.bukkit.Bukkit;
@@ -23,6 +24,7 @@ public class SMUHC extends JavaPlugin {
     public static SMUHC instance;
     public static final String consolePrefix = "[SuperMegaUltraHardcore]";
     public static final String smuhcPluginVersion = "1.0";
+    public static final String signPrefix = ChatColor.DARK_GRAY + "[" + ChatColor.DARK_RED + "SMUHC" + ChatColor.DARK_GRAY + "]";
 
     //Game Components
     public static ArenaController arenaController;
@@ -54,12 +56,13 @@ public class SMUHC extends JavaPlugin {
         inputOutput.prepareDB();
         inputOutput.updateDB();
         inputOutput.loadArenas();
+        inputOutput.loadSigns();
 
-        //Listener
+        //Listeners
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
+        getServer().getPluginManager().registerEvents(new BlockListener(), this);
 
-        if (!Bukkit.getPluginManager().isPluginEnabled("SidebarAPI"))
-        {
+        if (!Bukkit.getPluginManager().isPluginEnabled("SidebarAPI")) {
             log.log(Level.SEVERE, consolePrefix + "Sidebar API not found - required for gameplay!!");
             this.setEnabled(false);
             return;
@@ -71,6 +74,9 @@ public class SMUHC extends JavaPlugin {
 
         //Recipe
         Bukkit.addRecipe(SuperMegaDeathRocketComponent.Recipe());
+
+        //Schedule tasks
+        //Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new PlayerMemoryClean(), 36000, 36000);
 
         //Startup complete
         Bukkit.getLogger().log(Level.INFO, consolePrefix + " Startup complete. Took " + (System.currentTimeMillis() - startTimeInMilliseconds) + " ms");
