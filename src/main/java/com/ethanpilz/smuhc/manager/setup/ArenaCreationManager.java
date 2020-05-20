@@ -1,6 +1,6 @@
 package com.ethanpilz.smuhc.manager.setup;
 
-import com.ethanpilz.smuhc.experience.arena.ArenaSetupSessionAlreadyInProgress;
+import com.ethanpilz.smuhc.exceptions.arena.ArenaSetupSessionAlreadyInProgress;
 import com.ethanpilz.smuhc.session.ArenaSetupSession;
 
 import java.util.HashMap;

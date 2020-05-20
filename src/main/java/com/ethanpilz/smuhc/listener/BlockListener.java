@@ -53,25 +53,19 @@ public class BlockListener implements Listener {
         }
     }
     public void onBlockBreak(BlockBreakEvent event) {
-        if (event.getBlock().getType().equals(Material.OAK_WALL_SIGN) || event.getBlock().getType().equals(Material.OAK_SIGN))
-        {
+        if (event.getBlock().getType().equals(Material.OAK_WALL_SIGN) || event.getBlock().getType().equals(Material.OAK_SIGN)) {
             Sign sign = (Sign)event.getBlock().getState();
 
             Iterator it = SMUHC.arenaController.getArenas().entrySet().iterator();
-            while (it.hasNext())
-            {
+            while (it.hasNext()) {
                 Map.Entry entry = (Map.Entry) it.next();
                 Arena arena = (Arena) entry.getValue();
-                if (arena.getSignManager().isJoinSign(sign))
-                {
-                    if (event.getPlayer().hasPermission("FridayThe13th.Admin"))
-                    {
+                if (arena.getSignManager().isJoinSign(sign)) {
+                    if (event.getPlayer().hasPermission("smuhc.admin")) {
                         arena.getSignManager().removeJoinSign(sign);
                         SMUHC.inputOutput.deleteSign(sign.getX(), sign.getY(), sign.getZ(), sign.getWorld().getName());
                         event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.GREEN + "Sign removed successfully.");
-                    }
-                    else
-                    {
+                    } else {
                         //Don't have permission to break the sign
                         event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.RED + "You don't have permission to break SMUHC signs.");
                     }

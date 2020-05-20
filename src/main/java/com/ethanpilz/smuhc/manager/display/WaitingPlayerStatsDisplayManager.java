@@ -8,6 +8,7 @@ import com.ethanpilz.smuhc.components.arena.Arena;
 import com.ethanpilz.smuhc.components.level.SMUHCPlayerLevel;
 import com.ethanpilz.smuhc.exceptions.player.PlayerNotPlayingException;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,10 +79,9 @@ public class WaitingPlayerStatsDisplayManager {
                 statsScoreboard.addEntry(xpNeededValue);
             }
 
-
             statsScoreboard.update();
         } catch (PlayerNotPlayingException exception) {
-            //They're not playing, so don't update
+
         }
 
     }
@@ -89,9 +89,8 @@ public class WaitingPlayerStatsDisplayManager {
     /**
      * Displays stats scoreboard
      */
-    public void displayStatsScoreboard() {
-        statsScoreboard.showTo(player.getBukkitPlayer());
-        player.getBukkitPlayer().sendMessage("displayStatsScoreboard code ran now");
+    public void displayStatsScoreboard(Player player) {
+        statsScoreboard.showTo(player);
     }
 
     /**

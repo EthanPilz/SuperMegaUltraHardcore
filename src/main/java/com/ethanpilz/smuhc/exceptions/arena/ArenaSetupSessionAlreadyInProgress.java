@@ -1,4 +1,4 @@
-package com.ethanpilz.smuhc.experience.arena;
+package com.ethanpilz.smuhc.exceptions.arena;
 
 public class ArenaSetupSessionAlreadyInProgress extends Exception
 {

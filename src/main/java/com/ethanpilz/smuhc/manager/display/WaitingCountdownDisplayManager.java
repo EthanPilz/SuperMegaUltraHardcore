@@ -16,20 +16,18 @@ public class WaitingCountdownDisplayManager
     //Visuals
     private BossBar waitingBar;
 
-    public WaitingCountdownDisplayManager(Arena arena)
-    {
+    public WaitingCountdownDisplayManager(Arena arena) {
         this.arena = arena;
 
         //Visuals
-        waitingBar = Bukkit.createBossBar("SuperMegaUltraHardcore " + ChatColor.RED + "Time Left", BarColor.RED, BarStyle.SOLID, BarFlag.DARKEN_SKY);
+        waitingBar = Bukkit.createBossBar(ChatColor.RED + "SuperMegaUltraHardcore " + ChatColor.YELLOW + " - " + ChatColor.WHITE + "Time Left", BarColor.RED, BarStyle.SOLID, BarFlag.DARKEN_SKY);
     }
 
     /**
      * Displays countdown for supplied player
      * @param p
      */
-    public void displayForPlayer(Player p)
-    {
+    public void displayForPlayer(Player p) {
         waitingBar.addPlayer(p);
     }
 
@@ -51,8 +49,7 @@ public class WaitingCountdownDisplayManager
     /**
      * Updates the bar's countdown progress
      */
-    public void updateCountdownValue()
-    {
+    public void updateCountdownValue() {
         float value = ((((float) arena.getGameManager().getWaitingTimeLeft() - 0) * (1)) / (arena.getSecondsWaitingRoom())) + 0;
         waitingBar.setProgress(value);
     }

@@ -3,7 +3,11 @@ package com.ethanpilz.smuhc.components.arena;
 import com.ethanpilz.smuhc.SMUHC;
 import com.ethanpilz.smuhc.manager.game.GameManager;
 import com.ethanpilz.smuhc.manager.arena.SignManager;
-import org.bukkit.Location;
+import com.ethanpilz.smuhc.utils.FileUtils;
+import org.bukkit.*;
+
+import java.io.File;
+import java.util.logging.Level;
 
 public class Arena {
 
@@ -23,6 +27,7 @@ public class Arena {
 
         //Values
         this.arenaName = arenaName;
+        this.worldName = worldName;
         this.waitingLocation = waitingLocation;
         this.returnLocation = returnLocation;
         this.secondsWaitingRoom = secWaitingRoom;
@@ -42,6 +47,34 @@ public class Arena {
     }
 
     public String getWorldName() { return worldName; }
+
+    public World getWorld() { return Bukkit.getWorld(getWorldName()); }
+
+    public void prepareWorld() {
+        WorldCreator worldCreator = new WorldCreator("SMUHC_" + getName());
+        worldCreator.environment(World.Environment.NORMAL);
+        worldCreator.type(WorldType.NORMAL);
+        worldCreator.createWorld();
+        Bukkit.getServer().createWorld(worldCreator);
+    }
+
+    public void deleteWorldFolder() {
+        try {
+            // Delete the entire folder that the arena world is in.
+            File worldFile = Bukkit.getServer().getWorld(getName()).getWorldFolder();
+            SMUHC.log.log(Level.FINER, "deleteWorld(): worldFile: " + worldFile.getAbsolutePath());
+            if (FileUtils.deleteFolder(worldFile)) {
+                SMUHC.log.info("World " + getWorldName() + " was DELETED.");
+
+            } else {
+                SMUHC.log.severe("World  was NOT deleted.");
+                SMUHC.log.severe("Are you sure the folder exists?");
+            }
+        } catch (Throwable e) {
+            SMUHC.log.severe("No idea what went wrong... your best bet is to delete the files by hand.");
+            SMUHC.log.severe(e.getMessage());
+        }
+    }
 
     /**
      * Returns wait location

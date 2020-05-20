@@ -46,7 +46,7 @@ public class GameManager {
         resetGameStatistics();
 
         //Get max times
-        gameTimeMax = 0; //Since game time is calculated based on number of counselors during every game
+        gameTimeMax = 3600;
 
         //Managers
         playerManager = new PlayerManager(arena);
@@ -156,15 +156,11 @@ public class GameManager {
      */
     public void checkGameStatus() {
         if (isGameEmpty()) {
-            if (getPlayerManager().getNumberOfPlayers() >= 1) {
+            if (getPlayerManager().getNumberOfPlayers() >= 2) {
                 //There are people waiting and we've reached the min, change to waiting
                 changeGameStatus(GameStatus.Waiting);
             } else {
                 //Need more players before waiting countdown will begin
-
-                for (SMUHCPlayer player : getPlayerManager().getPlayers()) {
-                    //ActionBarAPI.sendActionBar(player.getBukkitPlayer(), ChatColor.RED + FridayThe13th.language.get(player.getBukkitPlayer(), "actionBar.waitingForMorePlayers", "Waiting for 1 more player before waiting countdown begins..."));
-                }
             }
         } else if (isGameWaiting()) {
             if (getPlayerManager().getNumberOfPlayers() >= 1) {
@@ -219,7 +215,7 @@ public class GameManager {
      *
      * @param status
      */
-    private void changeGameStatus(GameStatus status) {
+    public void changeGameStatus(GameStatus status) {
         //Changing to empty
         if (status.equals(GameStatus.Empty)) {
             //Tasks
@@ -269,18 +265,13 @@ public class GameManager {
             gameCountdownTask = Bukkit.getScheduler().scheduleSyncRepeatingTask(SMUHC.instance, new GameCountdown(arena), 0, 20);
         }
 
-        //arena.getSignManager().updateJoinSigns(); //update the join signs
+        arena.getSignManager().updateJoinSigns(); //update the join signs
     }
 
     /**
      * Performs actions to begin the game
      */
     private void beginGame() {
-
-        WorldCreator worldCreator = new WorldCreator("SMUHC_" + arena.getName());
-        worldCreator.environment(World.Environment.NORMAL);
-        worldCreator.type(WorldType.NORMAL);
-        worldCreator.createWorld();
 
         //Assign all players roles
         getPlayerManager().beginGame();
@@ -305,7 +296,15 @@ public class GameManager {
 
             //Unload the current arena's world, boolean false is saying do not save it.
             Bukkit.unloadWorld(arena.getWorldName(), false);
+            arena.deleteWorldFolder();
 
+            //Now, it's time to regenerate the world, 30 seconds after the game ended and the world was deleted.
+            Bukkit.getScheduler().scheduleSyncDelayedTask(SMUHC.instance, new Runnable() {
+                @Override
+                public void run() {
+                   arena.prepareWorld();
+                }
+            }, 600L); //20 Tick (1 Second) delay before run() is called
         }
     }
 
@@ -313,7 +312,7 @@ public class GameManager {
      * Ends the game when the time expires
      */
     public void gameTimeUp() {
-        //need to pass that the counselors who are alive won.
+        //need to pass that the fighter who is alive won.
         endGame();
     }
 

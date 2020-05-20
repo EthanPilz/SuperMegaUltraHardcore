@@ -3,7 +3,6 @@ package com.ethanpilz.smuhc.experience;
 import com.ethanpilz.smuhc.SMUHC;
 import com.ethanpilz.smuhc.components.SMUHCPlayer;
 import com.ethanpilz.smuhc.components.arena.Arena;
-import com.ethanpilz.smuhc.components.level.XPAward;
 
 import java.util.ArrayList;
 import java.util.Iterator;

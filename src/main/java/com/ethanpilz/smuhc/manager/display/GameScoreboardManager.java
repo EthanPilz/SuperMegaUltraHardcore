@@ -21,7 +21,6 @@ public class GameScoreboardManager {
         arena = a;
         gameScoreboard = new Sidebar(ChatColor.RED + "" + ChatColor.BOLD + "SuperMegaUltraHardcore", SMUHC.instance, 60);
         timeLeftValue = new SidebarString("");
-        jasonValue = new SidebarString("");
     }
 
     /**

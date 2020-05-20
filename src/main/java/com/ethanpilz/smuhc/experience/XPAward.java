@@ -1,6 +1,4 @@
-package com.ethanpilz.smuhc.components.level;
-
-import org.bukkit.Bukkit;
+package com.ethanpilz.smuhc.experience;
 
 public enum XPAward {
 

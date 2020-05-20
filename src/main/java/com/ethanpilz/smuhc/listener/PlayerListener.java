@@ -4,6 +4,7 @@ import com.ethanpilz.smuhc.SMUHC;
 import com.ethanpilz.smuhc.components.SMUHCPlayer;
 import com.ethanpilz.smuhc.components.arena.Arena;
 import com.ethanpilz.smuhc.components.rocket.Rocket;
+import com.ethanpilz.smuhc.exceptions.game.GameFullException;
 import com.ethanpilz.smuhc.exceptions.game.GameInProgressException;
 import com.ethanpilz.smuhc.exceptions.player.PlayerNotPlayingException;
 import com.ethanpilz.smuhc.factory.SMUHCItemFactory;
@@ -19,6 +20,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
@@ -65,9 +67,12 @@ public class PlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerRegen(EntityRegainHealthEvent event) {
-        if (SMUHC.arenaController.isPlaying((Player) event.getEntity())) {
-            if (event.getRegainReason() == EntityRegainHealthEvent.RegainReason.SATIATED || event.getRegainReason() == EntityRegainHealthEvent.RegainReason.REGEN)
-                event.setCancelled(true);
+        if (event.getEntity().getType().equals(EntityType.PLAYER)) {
+            if (SMUHC.arenaController.isPlaying((Player) event.getEntity())) {
+                if (event.getRegainReason() == EntityRegainHealthEvent.RegainReason.SATIATED || event.getRegainReason() == EntityRegainHealthEvent.RegainReason.REGEN)
+                    ((Player) event.getEntity()).playSound(event.getEntity().getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 1, -50);
+                    event.setCancelled(true);
+            }
         }
     }
 
@@ -125,7 +130,7 @@ public class PlayerListener implements Listener {
                         arena.getGameManager().getPlayerManager().playerJoinGame(SMUHC.playerController.getPlayer(event.getPlayer()));
                         //} catch (GameFullException e) {
                         //event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.RED + "The game in " + ChatColor.AQUA + arena.getName() + ChatColor.RED + " is full.");
-                    } catch (GameInProgressException e) {
+                    } catch (GameInProgressException | GameFullException e) {
                         //Enter as a spectator
                         arena.getGameManager().getPlayerManager().becomeSpectator(SMUHC.playerController.getPlayer(event.getPlayer()));
                     }
@@ -210,14 +215,20 @@ public class PlayerListener implements Listener {
         }
     }
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onPlayerDeath(PlayerDeathEvent event) {
+    public void onPlayerDeath(PlayerDeathEvent event) throws PlayerNotPlayingException {
         if (SMUHC.arenaController.isPlaying(event.getEntity())) {
-            if (event.getEntity().getKiller() != null) {
+            // This should never ever happen
+            try {
+                Player player = event.getEntity();
+                SMUHC.arenaController.getPlayerArena(player).getGameManager().getPlayerManager().onPlayerDeath(SMUHC.playerController.getPlayer(player)); //See if they're playing
+
                 event.setDeathMessage(null);
                 event.getEntity().getWorld().strikeLightningEffect(event.getEntity().getLocation());
                 event.getEntity().playSound(event.getEntity().getLocation(), Sound.ENTITY_WITHER_DEATH, 1, 1);
                 Bukkit.getServer().broadcastMessage(SMUHC.smuhcPrefix + ChatColor.AQUA + event.getEntity().getName() + ChatColor.RED + " has been killed by " + ChatColor.AQUA + event.getEntity().getKiller().getName());
 
+            } catch (PlayerNotPlayingException exception) {
+                //Don't care
             }
         }
     }
@@ -235,7 +246,76 @@ public class PlayerListener implements Listener {
         try {
             SMUHC.arenaController.getPlayerArena(event.getPlayer()).getGameManager().getPlayerManager().onPlayerLogout(SMUHC.playerController.getPlayer(event.getPlayer()));
         } catch (PlayerNotPlayingException e){
-            //dont fuckin care
+            // Not playing, don't care.
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onArmorStandManipulate(PlayerArmorStandManipulateEvent event) {
+
+        if (SMUHC.arenaController.isPlaying(event.getPlayer())) {
+            event.setCancelled(true); //Cannot manipulate armor stands while playing
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
+        if (SMUHC.arenaController.isPlaying(event.getPlayer())) {
+            if (!event.getMessage().toLowerCase().startsWith("/smuhc")) {
+                event.setCancelled(true);
+                event.getPlayer().sendMessage(SMUHC.smuhcPrefix + ChatColor.RED + "Only SuperMegaUltraHardcore commands are available during gameplay.");
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerDamage(EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player) {
+            try {
+                Player temp = (Player) event.getEntity();
+
+                //Make sure they're an actual player and not an NPC
+                if (Bukkit.getPlayer(temp.getUniqueId()) != null) {
+                    SMUHCPlayer playerDamaged = SMUHC.playerController.getPlayer((Player) event.getEntity());
+                    Arena arena = SMUHC.arenaController.getPlayerArena(playerDamaged); //See if they're playing
+
+                    if (arena.getGameManager().isGameInProgress()) {
+                        if (arena.getGameManager().getPlayerManager().isSpectator(playerDamaged)) {
+                            event.setCancelled(true); //You can't get hurt in spectate mode
+                        } else {
+                            if (event instanceof EntityDamageByEntityEvent) {
+                                EntityDamageByEntityEvent edbeEvent = (EntityDamageByEntityEvent) event;
+                                if (edbeEvent.getDamager() instanceof Player) {
+                                    //The person doing the damage is a player, too.
+                                    SMUHCPlayer playerDamager = SMUHC.playerController.getPlayer((Player) edbeEvent.getDamager());
+
+                                    if (SMUHC.arenaController.isPlaying(playerDamager)) {
+                                        //The person doing the damage is playing
+                                        if (arena.getGameManager().getPlayerManager().isSpectator(playerDamager)) {
+                                            //The damage is a player in spectate mode
+                                            event.setCancelled(true);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (!event.isCancelled()) {
+                            if (playerDamaged.getBukkitPlayer().getHealth() <= event.getDamage()) {
+                                //This blow would kill them
+                                event.setCancelled(true);
+                                playerDamaged.getBukkitPlayer().setHealth(20);
+                                arena.getGameManager().getPlayerManager().onPlayerDeath(playerDamaged);
+                            }
+                        }
+                    } else {
+                        //You can't get damaged while waiting
+                        event.setCancelled(true);
+                    }
+                }
+
+            } catch (PlayerNotPlayingException exception) {
+
+            }
         }
     }
 }

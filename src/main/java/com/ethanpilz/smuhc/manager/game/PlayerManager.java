@@ -1,12 +1,13 @@
 package com.ethanpilz.smuhc.manager.game;
 
 import com.ethanpilz.smuhc.SMUHC;
+import com.ethanpilz.smuhc.components.arena.GameStatus;
 import com.ethanpilz.smuhc.components.characters.Fighter;
 import com.ethanpilz.smuhc.components.characters.SMUHCCharacter;
 import com.ethanpilz.smuhc.components.SMUHCPlayer;
 import com.ethanpilz.smuhc.components.characters.Spectator;
 import com.ethanpilz.smuhc.components.arena.Arena;
-import com.ethanpilz.smuhc.components.level.XPAward;
+import com.ethanpilz.smuhc.exceptions.game.GameFullException;
 import com.ethanpilz.smuhc.exceptions.game.GameInProgressException;
 import com.ethanpilz.smuhc.exceptions.player.PlayerAlreadyPlayingException;
 import org.bukkit.Bukkit;
@@ -21,6 +22,7 @@ import java.util.HashSet;
 import java.util.UUID;
 
 public class PlayerManager {
+
     private Arena arena;
 
     //Game Players
@@ -70,6 +72,7 @@ public class PlayerManager {
      */
     private void addPlayer(SMUHCPlayer player) {
         fighters.put(player, getFighter(player));
+        players.add(player);
 
     }
 
@@ -91,18 +94,21 @@ public class PlayerManager {
         return fighters.get(player);
     }
 
+    public HashMap<SMUHCPlayer, Fighter> getFighters() {
+        return fighters;
+    }
     /**
-     * @param player F13Player
-     * @return If the player is a counselor
+     * @param player SMUHCPlayer
+     * @return If the player is a fighter
      */
     public boolean isFighter(SMUHCPlayer player) {
         return fighters.containsKey(player);
     }
 
     /**
-     * Assigns the provided player as a counselor
+     * Assigns the provided player as a fighter
      *
-     * @param player F13Player
+     * @param player SMUHCPlayer
      */
     private void assignFighter(SMUHCPlayer player) {
         addFighter(new Fighter(player, arena));
@@ -110,12 +116,12 @@ public class PlayerManager {
 
 
     /**
-     * Adds new counselor
+     * Adds new Fighter
      *
-     * @param counselor Counselor object
+     * @param fighter Fighter object
      */
-    private void addFighter(Fighter counselor) {
-        fighters.put(counselor.getSMUHCPlayer(), counselor);
+    private void addFighter(Fighter fighter) {
+        fighters.put(fighter.getSMUHCPlayer(), fighter);
     }
 
 
@@ -161,7 +167,7 @@ public class PlayerManager {
      */
     protected void beginGame() {
 
-        for (SMUHCCharacter player : fighters.values()) {
+        for (Fighter player : fighters.values()) {
             player.prepareForGameplay();
             addAlivePlayer(player.getSMUHCPlayer());
         }
@@ -279,6 +285,7 @@ public class PlayerManager {
      */
     public void onPlayerDeath(SMUHCPlayer player) {
         if (arena.getGameManager().isGameInProgress()) {
+
             //Transition from alive to dead hash set
             removeAlivePlayer(player);
             addDeadPlayer(player);
@@ -291,8 +298,8 @@ public class PlayerManager {
             {
                 arena.getGameManager().getPlayerManager().fireFirework(player, Color.RED);
                 //Enter spectating mode
-                //getCounselor(player).transitionToSpectatingMode();
-                //becomeSpectator(player);
+                getFighter(player).transitionToSpectatingMode();
+                becomeSpectator(player);
             } else {
                 //They were the last to die, so end the game
                 arena.getGameManager().endGame();
@@ -343,6 +350,20 @@ public class PlayerManager {
      */
     public boolean isSpectator(SMUHCPlayer player) {
         return spectators.containsKey(player);
+    }
+
+    /**
+     * @return If there is enough room for the player to join
+     */
+    public synchronized boolean isRoomForPlayerToJoin() {
+        //Determine if we have enough spawn points for the game's 8 counselors
+        if (arena.getGameManager().getPlayerManager().getPlayers().size() <= 100) {
+            //We don't have to worry about spawn points - Games capped at 8 counselors + Jason.
+            return getNumberOfPlayers() < 100;
+        } else {
+            //They're are less than 8 spawn points for counselors
+            return false;
+        }
     }
 
     /**
@@ -413,29 +434,33 @@ public class PlayerManager {
      *
      * @param player SMUHCPlayer
      */
-    public synchronized void playerJoinGame(SMUHCPlayer player) throws GameInProgressException {
+    public synchronized void playerJoinGame(SMUHCPlayer player) throws GameFullException, GameInProgressException {
         if (arena.getGameManager().isGameEmpty() || arena.getGameManager().isGameWaiting()) {
-            try {
-                //Add to lists
-                SMUHC.arenaController.addPlayer(player, arena);
-                addPlayer(player);
+            //Determine if there's room for this user
+            if (isRoomForPlayerToJoin()) {
+                try {
+                    //Add to lists
+                    SMUHC.arenaController.addPlayer(player, arena);
+                    addPlayer(player);
 
-                assignFighter(player);
-                getFighter(player).enterWaitingRoom();
+                    //Prepare them for the game
+                    assignFighter(player);
+                    getFighter(player).enterWaitingRoom();
 
-                //Announce arrival
-                int playerNumber = players.size();
-                sendMessageToAllPlayers(ChatColor.GREEN + player.getBukkitPlayer().getName() + ChatColor.YELLOW + " has joined the game. There are now " + ChatColor.GREEN + playerNumber + ChatColor.YELLOW + "players in the game.");
+                    //Announce arrival
+                    int playerNumber = players.size();
+                    sendMessageToAllPlayers(ChatColor.GREEN + player.getBukkitPlayer().getName() + ChatColor.YELLOW + " has joined the game. There are now " + ChatColor.GREEN + playerNumber + ChatColor.YELLOW + " players in the game.");
+                    if (players.size() == 1) {
+                        arena.getSignManager().updateJoinSigns(); //If it's just them, update signs
+                    }
 
-                if (players.size() == 1) {
-                     arena.getSignManager().updateJoinSigns(); //If it's just them, update signs
-                 }
-
-            } catch (PlayerAlreadyPlayingException exception) {
-                //They're already in the controller global player list
-                player.getBukkitPlayer().sendMessage(SMUHC.smuhcPrefix + "Failed to add you to game because you're already registered as playing a game.");
+                } catch (PlayerAlreadyPlayingException exception) {
+                    //They're already in the controller global player list
+                    player.getBukkitPlayer().sendMessage(SMUHC.smuhcPrefix + "Failed to add you to game because you're already registered as playing a game.");
+                }
+            } else {
+                throw new GameFullException();
             }
-
         } else {
             throw new GameInProgressException();
         }
@@ -460,6 +485,12 @@ public class PlayerManager {
             } else {
                 arena.getGameManager().getPlayerManager().removePlayer(player);
             }
+
+        } else if (arena.getGameManager().isGameWaiting()) {
+            if (players.size() < 2) {
+                arena.getGameManager().changeGameStatus(GameStatus.Empty);
+            }
+
         } else if (isSpectator(player)) {
             arena.getGameManager().getPlayerManager().getSpectator(player).leaveGame();
         } else {

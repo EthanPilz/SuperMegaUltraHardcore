@@ -1,16 +1,22 @@
 package com.ethanpilz.smuhc.manager.display;
 
 import com.ethanpilz.smuhc.components.arena.Arena;
+import org.bukkit.Bukkit;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarFlag;
+import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 
 public class GameCountdownManager {
+
     private Arena arena;
     private BossBar gameCountdownBar;
 
-
     public GameCountdownManager (Arena arena) {
         this.arena = arena;
+        gameCountdownBar = Bukkit.createBossBar("Time Left", BarColor.WHITE, BarStyle.SOLID, BarFlag.CREATE_FOG);
+        gameCountdownBar.setProgress(1);
     }
 
     public void updateCountdown() {

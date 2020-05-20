@@ -3,12 +3,13 @@ package com.ethanpilz.smuhc.components.characters;
 import com.ethanpilz.smuhc.components.SMUHCPlayer;
 import com.ethanpilz.smuhc.components.arena.Arena;
 import com.ethanpilz.smuhc.experience.XPManager;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
+import java.util.Random;
 
 public class SMUHCCharacter {
 
@@ -97,10 +98,12 @@ public class SMUHCCharacter {
      * Prepares the player for the waiting room and teleports them in
      */
     public void enterWaitingRoom() {
+
         teleportToWaitingRoom();
         setDefaultSurvivalTraits();
-        //giveWaitingRoomItems();
-        getSMUHCPlayer().getWaitingPlayerStatsDisplayManager().displayStatsScoreboard();
+        giveWaitingRoomItems();
+        getSMUHCPlayer().getWaitingPlayerStatsDisplayManager().displayStatsScoreboard(getSMUHCPlayer().getBukkitPlayer());
+        arena.getGameManager().getWaitingCountdownDisplayManager().displayForPlayer(getSMUHCPlayer().getBukkitPlayer());
         //makePlayerVisibleToEveryone(true); //In case of invisibility bug
 
     }
@@ -160,36 +163,6 @@ public class SMUHCCharacter {
         }
     }
 
-    /**
-     * Performs all necessary tasks when the game begins
-     */
-    public void prepareForGameplay() {
-        //Clear their inventory of any waiting room goodies
-        getSMUHCPlayer().getBukkitPlayer().getInventory().clear();
-
-        //Remove flying
-        getSMUHCPlayer().getBukkitPlayer().setFlying(false);
-        getSMUHCPlayer().getBukkitPlayer().setAllowFlight(false);
-
-        //Display Status
-       // getCounselorStatsDisplayManager().displayStats();
-
-        //Display game-wide scoreboard
-        getSMUHCPlayer().getWaitingPlayerStatsDisplayManager().removeStatsScoreboard();
-        arena.getGameManager().getGameCountdownManager().hideFromPlayer(getSMUHCPlayer().getBukkitPlayer()); //In case they're coming from spectators
-        arena.getGameManager().getGameScoreboardManager().displayForPlayer(getSMUHCPlayer().getBukkitPlayer());
-
-        //Start All Counselor Tasks
-        //scheduleTasks();
-
-        //Perks
-        //addGameStartPerks();
-
-        //Make them visible, in case that invisibility bug is hitting usfile
-
-        makePlayerVisibleToEveryone(true);
-    }
-
 
     /**
          * Puts the player into classic survival mode for the game
@@ -207,6 +180,7 @@ public class SMUHCCharacter {
          */
         private void giveWaitingRoomItems () {
             //Give them waiting room items
+            getSMUHCPlayer().getBukkitPlayer().getInventory().addItem(new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 1));
             //SpawnPreferenceMenu.addMenuOpenItem(getSMUHCPlayer().getBukkitPlayer());
             //Profiles_MainMenu.addMenuOpenItem(getSMUHCPlayer().getBukkitPlayer());
             //Shop_MainMenu.addMenuOpenItem(getSMUHCPlayer().getBukkitPlayer());

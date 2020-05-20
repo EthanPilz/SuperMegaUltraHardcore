@@ -4,15 +4,12 @@ import com.ethanpilz.smuhc.SMUHC;
 import com.ethanpilz.smuhc.components.arena.Arena;
 import com.ethanpilz.smuhc.exceptions.SaveToDatabaseException;
 import com.ethanpilz.smuhc.exceptions.arena.ArenaAlreadyExistsException;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
-public class ArenaSetupSession
-{
+public class ArenaSetupSession {
     private int state;
     private String arenaName;
     private String worldName;
@@ -21,8 +18,7 @@ public class ArenaSetupSession
     private Location waitingLocation;
     private Location returnLocation;
 
-    public ArenaSetupSession(String playerUUID, String arenaName)
-    {
+    public ArenaSetupSession(String playerUUID, String arenaName) {
         this.state = 0;
         this.playerUUID = playerUUID;
         this.arenaName = arenaName;
@@ -32,10 +28,8 @@ public class ArenaSetupSession
 
     }
 
-    public void selectionMade()
-    {
-        switch (this.state)
-        {
+    public void selectionMade() {
+        switch (this.state) {
             case 0:
                 beginArenaCreation();
                 break;
@@ -48,8 +42,11 @@ public class ArenaSetupSession
         }
     }
 
-    private void beginArenaCreation()
-    {
+    private void beginArenaCreation() {
+        if (Bukkit.getWorld("SMUCH_" + this.arenaName) != null) {
+            SMUHC.arenaCreationManager.removePlayerSetupSession(this.playerUUID);
+            this.player.sendMessage(SMUHC.smuhcPrefix + ChatColor.RED + "A world with the name of your arena already exists, so you cannot setup this arena.");
+        }
         this.player.sendMessage(ChatColor.RED + "-------SuperMegaUltraHardcore-------");
         this.player.sendMessage(ChatColor.WHITE + "To begin the setup process for arena " + ChatColor.GREEN + this.arenaName);
         this.player.sendMessage("");
@@ -59,19 +56,18 @@ public class ArenaSetupSession
 
     }
 
-    private void waitingLocationSelected()
-    {
+    private void waitingLocationSelected() {
         this.player.sendMessage(ChatColor.RED + "-------SuperMegaUltraHardcore-------");
         this.player.sendMessage(ChatColor.WHITE + "Game " + ChatColor.GREEN + this.arenaName);
         this.player.sendMessage("");
-        this.player.sendMessage(ChatColor.WHITE + "Waiting location selected. Go to where players will be sent after the game ends and execute " + ChatColor.GREEN + "/smuhc here" + ChatColor.WHITE + " to use your current location.");
+        this.player.sendMessage(ChatColor.WHITE + "Waiting location selected. Go to where players will be sent after the game ends and execute ");
+        this.player.sendMessage(ChatColor.AQUA + "/smuhc here" + ChatColor.WHITE + " to use your current location.");
         this.player.sendMessage(ChatColor.RED + "--------------------------------------");
         this.state++;
         this.waitingLocation = player.getLocation();
     }
 
-    private void returnLocationSelected()
-    {
+    private void returnLocationSelected() {
         this.player.sendMessage(ChatColor.RED + "-------SuperMegaUltraHardcore-------");
         this.player.sendMessage(ChatColor.WHITE + "Game " + ChatColor.RED + this.arenaName + ChatColor.WHITE + ":");
         this.player.sendMessage("");
@@ -87,6 +83,8 @@ public class ArenaSetupSession
         try {
             SMUHC.inputOutput.storeArena(arena);
             SMUHC.arenaController.addArena(arena);
+            arena.prepareWorld();
+
         } catch (SaveToDatabaseException exception) {
             player.sendMessage(SMUHC.smuhcPrefix + "Game setup FAILED due to a database error.");
         } catch (ArenaAlreadyExistsException exception) {

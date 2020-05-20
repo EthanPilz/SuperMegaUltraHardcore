@@ -324,10 +324,8 @@ public class InputOutput {
      * @param sign
      * @throws SaveToDatabaseException
      */
-    public void storeSign(Sign sign, Arena arena) throws SaveToDatabaseException
-    {
-        try
-        {
+    public void storeSign(Sign sign, Arena arena) throws SaveToDatabaseException {
+        try {
             String sql;
             Connection conn = InputOutput.getConnection();
 
@@ -344,9 +342,7 @@ public class InputOutput {
 
             preparedStatement.executeUpdate();
             conn.commit();
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             SMUHC.log.log(Level.WARNING, SMUHC.consolePrefix + "Encountered an error while attempting to store a sign to the database: " + e.getMessage());
             throw new SaveToDatabaseException();
         }
@@ -359,10 +355,8 @@ public class InputOutput {
      * @param Z
      * @param world
      */
-    public void deleteSign(double X, double Y, double Z, String world)
-    {
-        try
-        {
+    public void deleteSign(double X, double Y, double Z, String world) {
+        try {
             Connection conn = InputOutput.getConnection();
             PreparedStatement ps = conn.prepareStatement("DELETE FROM smuhc_signs WHERE World = ? AND X = ? AND Y = ? AND Z = ?");
             ps.setString(1, world);
@@ -384,10 +378,8 @@ public class InputOutput {
     /**
      * Loads chests from database into arena memory
      */
-    public void loadSigns()
-    {
-        try
-        {
+    public void loadSigns() {
+        try {
             Connection conn;
             PreparedStatement ps = null;
             ResultSet result = null;
@@ -397,12 +389,11 @@ public class InputOutput {
 
             int count = 0;
             int removed = 0;
-            while (result.next())
-            {
+            while (result.next()) {
                 if (Bukkit.getWorld(result.getString("World")) != null) {
                     Location signLocation = new Location(Bukkit.getWorld(result.getString("World")), result.getDouble("X"), result.getDouble("Y"), result.getDouble("Z"));
 
-                    if (signLocation.getBlock().getType().equals(Material.LEGACY_WALL_SIGN) || signLocation.getBlock().getType().equals(Material.LEGACY_SIGN) || signLocation.getBlock().getType().equals(Material.LEGACY_SIGN_POST)) {
+                    if (signLocation.getBlock().getState() instanceof Sign) {
                         try {
                             Arena arena = SMUHC.arenaController.getArena(result.getString("Arena"));
                             arena.getSignManager().addJoinSign((Sign) signLocation.getBlock().getState());
@@ -413,7 +404,7 @@ public class InputOutput {
                             removed++;
                         }
                     } else {
-                        //This location is no longer a chest, so remove it
+                        //This location is no longer a sign, so remove it
                         deleteSign(result.getDouble("X"), result.getDouble("Y"), result.getDouble("Z"), result.getString("World"));
                         removed++;
                     }
@@ -424,21 +415,17 @@ public class InputOutput {
                 }
             }
 
-            if (count > 0)
-            {
+            if (count > 0) {
                 SMUHC.log.log(Level.INFO, SMUHC.consolePrefix + "Loaded " + count + " signs(s).");
             }
 
-            if (removed > 0)
-            {
+            if (removed > 0) {
                 SMUHC.log.log(Level.INFO, SMUHC.consolePrefix + "Removed " + removed + " signs(s).");
             }
 
             conn.commit();
             ps.close();
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             SMUHC.log.log(Level.WARNING, SMUHC.consolePrefix + "Encountered a SQL exception while attempting to load signs from database: " + e.getMessage());
         }
     }

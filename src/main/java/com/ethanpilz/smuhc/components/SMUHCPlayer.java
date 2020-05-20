@@ -10,7 +10,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 
-import java.util.HashSet;
 import java.util.UUID;
 import java.util.logging.Level;
 

@@ -3,9 +3,10 @@ package com.ethanpilz.smuhc.command;
 import com.ethanpilz.smuhc.SMUHC;
 import com.ethanpilz.smuhc.components.arena.Arena;
 import com.ethanpilz.smuhc.exceptions.arena.ArenaDoesNotExistException;
+import com.ethanpilz.smuhc.exceptions.game.GameFullException;
 import com.ethanpilz.smuhc.exceptions.game.GameInProgressException;
 import com.ethanpilz.smuhc.exceptions.player.PlayerNotPlayingException;
-import com.ethanpilz.smuhc.experience.arena.ArenaSetupSessionAlreadyInProgress;
+import com.ethanpilz.smuhc.exceptions.arena.ArenaSetupSessionAlreadyInProgress;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -50,6 +51,8 @@ public class CommandHandler implements CommandExecutor {
                             sender.sendMessage(SMUHC.smuhcPrefix + ChatColor.RED + "Game " + ChatColor.AQUA + args[1] + ChatColor.RED + " does not exist.");
                         } catch (GameInProgressException exception) {
                             sender.sendMessage(SMUHC.smuhcPrefix + ChatColor.RED + "Game " + ChatColor.AQUA + args[1] + ChatColor.RED + " is already in progress.");
+                        } catch (GameFullException e) {
+                            sender.sendMessage(SMUHC.smuhcPrefix + ChatColor.RED + "Game " + ChatColor.AQUA + args[1] + ChatColor.RED + " is full.");
                         }
 
                     } else {
@@ -211,6 +214,16 @@ public class CommandHandler implements CommandExecutor {
                         sender.sendMessage(SMUHC.smuhcPrefix + ChatColor.RED + "You are not in a game, therefore you cannot leave one.");
                     }
 
+
+                } else if (args[0].equalsIgnoreCase("player")) {
+                    if (args.length == 2) {
+                        try {
+                            Arena arena = SMUHC.arenaController.getPlayerArena(SMUHC.playerController.getPlayer(args[1]));
+                            sender.sendMessage(SMUHC.smuhcPrefix + ChatColor.AQUA + args[1] + ChatColor.YELLOW + "is in " + ChatColor.AQUA + arena.getName());
+                        } catch (PlayerNotPlayingException e) {
+                            sender.sendMessage(SMUHC.smuhcPrefix + ChatColor.RED + "That player is currently not in a game.");
+                        }
+                    }
                     } else {
                         sender.sendMessage(SMUHC.smuhcPrefix + ChatColor.RED + "Unknown command " + ChatColor.AQUA + args[0] + ChatColor.RED + ". These look like commands to me: \n" + ChatColor.YELLOW + "reload, version, join, quit, setup, cancel, end, arena, delete");
 
