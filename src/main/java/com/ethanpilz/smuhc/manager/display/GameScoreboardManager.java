@@ -15,7 +15,6 @@ public class GameScoreboardManager {
     private Sidebar gameScoreboard;
 
     private SidebarString timeLeftValue;
-    private SidebarString jasonValue;
 
     public GameScoreboardManager(Arena a) {
         arena = a;
@@ -32,24 +31,17 @@ public class GameScoreboardManager {
             gameScoreboard.removeEntry(string);
         }
 
-        SidebarString arenaTitle = new SidebarString(ChatColor.GOLD +  "Game");
+        SidebarString arenaTitle = new SidebarString(ChatColor.GOLD +  "Game " + ChatColor.AQUA + arena.getName());
         gameScoreboard.addEntry(arenaTitle);
-
-        SidebarString arenaName = new SidebarString(arena.getName());
-        gameScoreboard.addEntry(arenaName);
 
         gameScoreboard.addEntry(new SidebarString(" "));
 
         //Time Left
-        SidebarString timeLeftTitle = new SidebarString(ChatColor.GOLD + "Time Left");
-        gameScoreboard.addEntry(timeLeftTitle);
-
         int rem = arena.getGameManager().getGameTimeLeft() % 3600;
         int mn = rem / 60;
         int sec = rem % 60;
-
-        timeLeftValue = new SidebarString(mn + "m " + sec + "s");
-        gameScoreboard.addEntry(timeLeftValue);
+        SidebarString timeLeftTitle = new SidebarString(ChatColor.GOLD + "Time Left " + ChatColor.AQUA + mn + "m " + sec + "s");
+        gameScoreboard.addEntry(timeLeftTitle);
 
         //Space
         gameScoreboard.addEntry(new SidebarString("   "));

@@ -107,7 +107,7 @@ public class SignManager {
     /**
      * Marks all signs as deleted
      */
-    private void markDeleted(Sign sign) {
+    public void markDeleted(Sign sign) {
         sign.setLine(0, ChatColor.RED + SMUHC.signPrefix);
         sign.setLine(1, "[" +  "Deleted" + "]");
         sign.setLine(2, "");

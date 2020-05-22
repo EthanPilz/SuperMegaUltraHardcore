@@ -222,8 +222,8 @@ public class InputOutput {
             //updateInDatabase
             PreparedStatement preparedStatement = conn.prepareStatement(sql);
 
+            preparedStatement.setString(1, player.getPlayerUUID());
             preparedStatement.setInt(2, player.getXP());
-            preparedStatement.setString(6, player.getPlayerUUID());
             preparedStatement.executeUpdate();
             connection.commit();
 

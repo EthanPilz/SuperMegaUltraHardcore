@@ -62,13 +62,13 @@ public class Fighter extends SMUHCCharacter {
 
             Random random = new Random();
             int x = random.nextInt(10000);
-            int y = 150;
+            int y = 100;
             int z = random.nextInt(10000);
             Location teleportLocation = new Location(arena.getWorld(), x, y, z);
             player.getBukkitPlayer().teleport(teleportLocation);
-            player.getBukkitPlayer().playSound(player.getBukkitPlayer().getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1, 50);
+            player.getBukkitPlayer().playSound(player.getBukkitPlayer().getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1, -40);
             // Invulnerability for 10 seconds after cast
-            player.getBukkitPlayer().addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 1000000));
+            player.getBukkitPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 600, 1));
 
         }
 
@@ -76,12 +76,12 @@ public class Fighter extends SMUHCCharacter {
         //getCounselorStatsDisplayManager().displayStats();
 
         //Display game-wide scoreboard
-        //getSMUHCPlayer().getWaitingPlayerStatsDisplayManager().removeStatsScoreboard();
+        getSMUHCPlayer().getWaitingPlayerStatsDisplayManager().removeStatsScoreboard(getPlayer());
         arena.getGameManager().getGameCountdownManager().hideFromPlayer(getSMUHCPlayer().getBukkitPlayer()); //In case they're coming from spectators
         arena.getGameManager().getGameScoreboardManager().displayForPlayer(getSMUHCPlayer().getBukkitPlayer());
 
         //Start All Counselor Tasks
-        scheduleTasks();
+        //scheduleTasks();
 
         //Make them visible, in case that invisibility bug is hitting usfile
         makePlayerVisibleToEveryone(true);

@@ -286,22 +286,24 @@ public class PlayerManager {
     public void onPlayerDeath(SMUHCPlayer player) {
         if (arena.getGameManager().isGameInProgress()) {
 
-            //Transition from alive to dead hash set
+            // Transition from alive to dead hash set
             removeAlivePlayer(player);
             addDeadPlayer(player);
 
-            //Let everyone know
+            // Let everyone know
             sendMessageToAllPlayers(ChatColor.GRAY + player.getBukkitPlayer().getName());
 
-            //They're a normal player, see if there are still others alive
-            if (getNumberOfPlayersAlive() >= 1) //since jason is still presumably alive
-            {
+            // See if there are still others alive
+            if (getNumberOfPlayersAlive() >= 2) {
                 arena.getGameManager().getPlayerManager().fireFirework(player, Color.RED);
                 //Enter spectating mode
                 getFighter(player).transitionToSpectatingMode();
                 becomeSpectator(player);
             } else {
-                //They were the last to die, so end the game
+                // They were the last to die, so end the game
+                String winner = arena.getGameManager().getPlayerManager().getAlivePlayers().toString();
+                sendMessageToAllPlayers(SMUHC.smuhcPrefix + ChatColor.GREEN + "" + ChatColor.BOLD + winner + ChatColor.YELLOW + " is the winner of SuperMegaUltraHardcore!");
+
                 arena.getGameManager().endGame();
             }
         }

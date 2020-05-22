@@ -117,7 +117,7 @@ public class SMUHCCharacter {
 
         if (arena.getGameManager().isGameWaiting() || arena.getGameManager().isGameEmpty()) {
             if (getSMUHCPlayer().isOnline()) {
-                getSMUHCPlayer().getWaitingPlayerStatsDisplayManager().removeStatsScoreboard();
+                getSMUHCPlayer().getWaitingPlayerStatsDisplayManager().removeStatsScoreboard(getSMUHCPlayer().getBukkitPlayer());
                 arena.getGameManager().getWaitingCountdownDisplayManager().hideForPlayer(getSMUHCPlayer().getBukkitPlayer());
                 getSMUHCPlayer().getBukkitPlayer().getInventory().clear();
 
@@ -171,7 +171,7 @@ public class SMUHCCharacter {
             //Change game mode & clear inventory
             getSMUHCPlayer().getBukkitPlayer().setGameMode(GameMode.SURVIVAL);
             getSMUHCPlayer().getBukkitPlayer().setHealth(20);
-            getSMUHCPlayer().getBukkitPlayer().setFoodLevel(10);
+            getSMUHCPlayer().getBukkitPlayer().setFoodLevel(20);
             getSMUHCPlayer().getBukkitPlayer().getInventory().clear();
         }
 

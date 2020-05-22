@@ -80,7 +80,7 @@ public class XPManager {
 
         //Send confirmation message to the player
         if (player.isOnline()) {
-            player.getBukkitPlayer().sendMessage(SMUHC.smuhcPrefix + "You earned" + "xp from this round and now have a total of" + xpToAward +"xp.");
+            player.getBukkitPlayer().sendMessage(SMUHC.smuhcPrefix + "You earned" + XPAward.player_kill + " xp from this round and now have a total of " + calculateTotalXP() +" xp.");
         }
     }
 }

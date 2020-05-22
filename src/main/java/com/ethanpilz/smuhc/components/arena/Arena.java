@@ -70,6 +70,7 @@ public class Arena {
                 SMUHC.log.severe("World  was NOT deleted.");
                 SMUHC.log.severe("Are you sure the folder exists?");
             }
+
         } catch (Throwable e) {
             SMUHC.log.severe("No idea what went wrong... your best bet is to delete the files by hand.");
             SMUHC.log.severe(e.getMessage());
@@ -144,7 +145,7 @@ public class Arena {
         //Remove signs
         getSignManager().deleteSigns();
 
-        // arena.getSignManager().markDeleted();
+         //getSignManager().markDeleted();
         //                                    FridayThe13th.arenaController.removeArena(arena);
         //                                    FridayThe13th.inputOutput.deleteArena(arenaName);
     }

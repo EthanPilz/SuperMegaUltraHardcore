@@ -37,13 +37,10 @@ public class WaitingPlayerStatsDisplayManager {
             }
 
             //Game
-            SidebarString arenaTitle = new SidebarString(ChatColor.GOLD + "Game");
+            SidebarString arenaTitle = new SidebarString(ChatColor.GOLD + "Game " + ChatColor.AQUA + arena.getName());
             statsScoreboard.addEntry(arenaTitle);
 
-            SidebarString arenaName = new SidebarString(arena.getName());
-            statsScoreboard.addEntry(arenaName);
-
-            statsScoreboard.addEntry(new SidebarString("   "));
+            statsScoreboard.addEntry(new SidebarString(" "));
 
             SidebarString waitingPlayersTitle = new SidebarString(ChatColor.GOLD + "Waiting Players");
             statsScoreboard.addEntry(waitingPlayersTitle);
@@ -96,8 +93,8 @@ public class WaitingPlayerStatsDisplayManager {
     /**
      * Hides stats scoreboard
      */
-    public void removeStatsScoreboard() {
-        statsScoreboard.hideFrom(player.getBukkitPlayer());
+    public void removeStatsScoreboard(Player player) {
+        statsScoreboard.hideFrom(player);
     }
 }
 
